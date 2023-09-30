@@ -87,7 +87,7 @@ fn setup_level(
     ));
 
     let tiles_asset: Handle<Tiles> = asset_server.load("levels/level1/tilemap_ground.csv");
-    let tile_set_asset: Handle<TileSet> = asset_server.load("levels/level1/tilset.json");
+    let tile_set_asset: Handle<TileSet> = asset_server.load("levels/level1/tileset.json");
     let tilemap = Tilemap::new(
         tile_set_atlas.get(&tile_set_asset).unwrap(),
         tiles_atlas.get(&tiles_asset).unwrap(),

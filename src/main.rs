@@ -1,7 +1,7 @@
 use assets::{TileSetAssetLoader, TilesAssetLoader};
 use bevy::{prelude::*, window::WindowResolution};
 use level::LevelPlugin;
-use loading::TilemapAtlasPlugin;
+use loading::LoadingPlugin;
 use menu::MenuPlugin;
 use tilemap::{TileSet, Tiles};
 
@@ -37,7 +37,7 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
         )
-        .add_plugins(TilemapAtlasPlugin)
+        .add_plugins(LoadingPlugin)
         .add_plugins(LevelPlugin)
         .add_plugins(MenuPlugin)
         .add_asset::<Tiles>()
