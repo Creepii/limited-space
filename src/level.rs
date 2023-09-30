@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::GameStates;
+use crate::{atlas::TilemapAtlas, GameStates};
 
 pub struct LevelPlugin;
 
@@ -11,6 +11,11 @@ impl Plugin for LevelPlugin {
     }
 }
 
-fn setup_level(mut commands: Commands) {}
+fn setup_level(tilemap_atlas: Res<TilemapAtlas>, mut commands: Commands) {
+    commands.spawn(SpriteSheetBundle {
+        texture_atlas: tilemap_atlas.tilemap.as_ref().unwrap().clone(),
+        ..default()
+    });
+}
 
 fn cleanup_level() {}

@@ -2,11 +2,12 @@ use bevy::{asset::HandleId, prelude::*};
 
 use crate::GameStates;
 
-pub struct AtlasPlugin;
+pub struct TilemapAtlasPlugin;
 
-impl Plugin for AtlasPlugin {
+impl Plugin for TilemapAtlasPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameStates::Loading), start_loading_atlas)
+        app.insert_resource(TilemapAtlas { tilemap: None })
+            .add_systems(OnEnter(GameStates::Loading), start_loading_atlas)
             .add_systems(
                 Update,
                 check_atlas_loaded.run_if(in_state(GameStates::Loading)),
@@ -17,6 +18,11 @@ impl Plugin for AtlasPlugin {
 
 #[derive(Component)]
 struct AtlasFolder(Vec<HandleUntyped>);
+
+#[derive(Resource)]
+pub struct TilemapAtlas {
+    pub tilemap: Option<Handle<TextureAtlas>>,
+}
 
 fn start_loading_atlas(mut commands: Commands, asset_server: Res<AssetServer>) {
     let handles = asset_server.load_folder("tilemap").unwrap();
@@ -43,6 +49,7 @@ fn check_atlas_loaded(
 
 fn build_atlas(
     query: Query<&AtlasFolder>,
+    mut tilemap_atlas: ResMut<TilemapAtlas>,
     mut atlasses: ResMut<Assets<TextureAtlas>>,
     mut textures: ResMut<Assets<Image>>,
 ) {
@@ -54,5 +61,6 @@ fn build_atlas(
         }
         let atlas = atlas_builder.finish(&mut textures).unwrap();
         let atlas_handle = atlasses.add(atlas);
+        tilemap_atlas.tilemap = Some(atlas_handle);
     }
 }

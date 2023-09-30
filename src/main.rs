@@ -1,4 +1,4 @@
-use atlas::AtlasPlugin;
+use atlas::TilemapAtlasPlugin;
 use bevy::{prelude::*, window::WindowResolution};
 use level::LevelPlugin;
 use menu::MenuPlugin;
@@ -29,7 +29,7 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(AtlasPlugin)
+        .add_plugins(TilemapAtlasPlugin)
         .add_plugins(LevelPlugin)
         .add_plugins(MenuPlugin)
         .run();
