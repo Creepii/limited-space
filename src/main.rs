@@ -1,8 +1,11 @@
+use assets::{TileSetAssetLoader, TilesAssetLoader};
 use atlas::TilemapAtlasPlugin;
 use bevy::{prelude::*, window::WindowResolution};
 use level::LevelPlugin;
 use menu::MenuPlugin;
+use tilemap::{TileSet, Tiles};
 
+mod assets;
 mod atlas;
 mod level;
 mod menu;
@@ -33,6 +36,10 @@ fn main() {
         .add_plugins(TilemapAtlasPlugin)
         .add_plugins(LevelPlugin)
         .add_plugins(MenuPlugin)
+        .add_asset::<Tiles>()
+        .add_asset::<TileSet>()
+        .init_asset_loader::<TilesAssetLoader>()
+        .init_asset_loader::<TileSetAssetLoader>()
         .run();
 }
 
