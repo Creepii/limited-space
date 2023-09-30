@@ -97,16 +97,18 @@ fn setup_level(
         TilemapAtlasResolver::new(&tilemap, asset_server, tilemap_atlas, atlasses);
     for x in 0..tilemap.width() {
         for y in 0..tilemap.height() {
-            commands.spawn(SpriteSheetBundle {
-                texture_atlas: tilemap_resolver.atlas(),
-                sprite: TextureAtlasSprite::new(tilemap_resolver.get(x, y).unwrap()),
-                transform: Transform::from_translation(Vec3 {
-                    x: (x as f32) * 32.0,
-                    y: (y as f32) * 32.0,
-                    z: 0.0,
-                }),
-                ..default()
-            });
+            if let Some(tile) = tilemap_resolver.get(x, y) {
+                commands.spawn(SpriteSheetBundle {
+                    texture_atlas: tilemap_resolver.atlas(),
+                    sprite: TextureAtlasSprite::new(tile),
+                    transform: Transform::from_translation(Vec3 {
+                        x: (x as f32) * 32.0,
+                        y: (y as f32) * 32.0,
+                        z: 0.0,
+                    }),
+                    ..default()
+                });
+            }
         }
     }
 }

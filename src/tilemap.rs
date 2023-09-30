@@ -124,8 +124,8 @@ impl<'res, 'tilemap, 'tileset> TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
     }
 
     pub fn get(&self, x: usize, y: usize) -> Option<usize> {
-        let atlas: &TextureAtlas = self.atlasses.get(&self.atlas()).unwrap();
         let texture_name = self.tilemap.get_texture_name_of_tile(x, y)?;
+        let atlas: &TextureAtlas = self.atlasses.get(&self.atlas()).unwrap();
         let handle: Handle<Image> = self.asset_server.get_handle(texture_name);
         atlas.get_texture_index(&handle)
     }
