@@ -8,37 +8,97 @@
  "margin":0,
  "name":"tileset",
  "spacing":0,
- "tilecount":5,
+ "tilecount":15,
  "tiledversion":"1.8.0",
  "tileheight":32,
  "tiles":[
         {
-         "id":1,
-         "image":"tilemap\/grass_edge.png",
+         "id":6,
+         "image":"..\/..\/tilemap\/dirt_coarse.png",
          "imageheight":32,
          "imagewidth":32
         }, 
         {
-         "id":2,
-         "image":"tilemap\/grass_inner_corner.png",
+         "id":7,
+         "image":"..\/..\/tilemap\/dirt_fine.png",
          "imageheight":32,
          "imagewidth":32
         }, 
         {
-         "id":3,
-         "image":"tilemap\/grass_outer_corner.png",
+         "id":8,
+         "image":"..\/..\/tilemap\/grass.png",
          "imageheight":32,
          "imagewidth":32
         }, 
         {
-         "id":4,
-         "image":"tilemap\/dirt_coarse.png",
+         "id":9,
+         "image":"..\/..\/tilemap\/grass_corner_inner_ne.png",
          "imageheight":32,
          "imagewidth":32
         }, 
         {
-         "id":5,
-         "image":"tilemap\/dirt_fine.png",
+         "id":10,
+         "image":"..\/..\/tilemap\/grass_corner_inner_nw.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":11,
+         "image":"..\/..\/tilemap\/grass_corner_inner_se.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":12,
+         "image":"..\/..\/tilemap\/grass_corner_inner_sw.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":13,
+         "image":"..\/..\/tilemap\/grass_corner_outer_ne.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":14,
+         "image":"..\/..\/tilemap\/grass_corner_outer_nw.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":15,
+         "image":"..\/..\/tilemap\/grass_corner_outer_se.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":16,
+         "image":"..\/..\/tilemap\/grass_corner_outer_sw.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":17,
+         "image":"..\/..\/tilemap\/grass_edge_east.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":18,
+         "image":"..\/..\/tilemap\/grass_edge_north.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":19,
+         "image":"..\/..\/tilemap\/grass_edge_south.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":20,
+         "image":"..\/..\/tilemap\/grass_edge_west.png",
          "imageheight":32,
          "imagewidth":32
         }],
