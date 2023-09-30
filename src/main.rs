@@ -6,6 +6,7 @@ use menu::MenuPlugin;
 mod atlas;
 mod level;
 mod menu;
+mod tilemap;
 
 #[derive(States, Debug, Default, Hash, Eq, PartialEq, Clone)]
 enum GameStates {

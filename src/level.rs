@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{atlas::TilemapAtlas, GameStates};
+use crate::{
+    atlas::TilemapAtlas,
+    tilemap::{Tilemap, TilemapAtlasResolver},
+    GameStates,
+};
 
 pub struct LevelPlugin;
 
@@ -11,9 +15,21 @@ impl Plugin for LevelPlugin {
     }
 }
 
-fn setup_level(tilemap_atlas: Res<TilemapAtlas>, mut commands: Commands) {
+fn setup_level(
+    asset_server: Res<AssetServer>,
+    tilemap_atlas: Res<TilemapAtlas>,
+    atlasses: Res<Assets<TextureAtlas>>,
+    mut commands: Commands,
+) {
+    let tilemap = TilemapAtlasResolver::new(&Tilemap {}, asset_server, tilemap_atlas, atlasses);
     commands.spawn(SpriteSheetBundle {
-        texture_atlas: tilemap_atlas.tilemap.as_ref().unwrap().clone(),
+        texture_atlas: tilemap.atlas(),
+        sprite: TextureAtlasSprite::new(tilemap.get(0, 0).unwrap()),
+        transform: Transform::from_translation(Vec3 {
+            x: 32.0,
+            y: 0.0,
+            z: 0.0,
+        }),
         ..default()
     });
 }
