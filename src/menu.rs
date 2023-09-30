@@ -76,7 +76,7 @@ fn button_interactions(
 struct MenuParent;
 
 fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let font = asset_server.load("NotoSans-Regular.ttf");
+    let font = asset_server.load("fonts/NotoSans-Regular.ttf");
     let title_style = TextStyle {
         font: font.clone(),
         font_size: 100.0,

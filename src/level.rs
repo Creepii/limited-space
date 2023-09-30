@@ -37,7 +37,7 @@ fn setup_level(
 ) {
     commands.spawn((
         SpriteBundle {
-            texture: asset_server.load("turtle.png"),
+            texture: asset_server.load("characters/turtle.png"),
             ..default()
         },
         Character::Turtle,
