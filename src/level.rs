@@ -105,7 +105,8 @@ fn setup_level(
                         x: (x as f32) * 32.0,
                         y: (y as f32) * 32.0,
                         z: 0.0,
-                    }).with_scale(Vec3::new(1.02, 1.02, 1.0)),
+                    })
+                    .with_scale(Vec3::new(1.02, 1.02, 1.0)),
                     ..default()
                 });
             }
@@ -201,12 +202,12 @@ fn camera_movement(
         }
     };
     fn lerp(a: f32, b: f32, factor: f32) -> f32 {
-        a * factor + b * (1.0 - factor)
+        b * factor + a * (1.0 - factor)
     }
     for mut camera_transform in param_set.p0().iter_mut() {
-        camera_transform.translation.x = lerp(camera_transform.translation.x, x, 0.8);
-        camera_transform.translation.y = lerp(camera_transform.translation.y, y, 0.8);
-        camera_transform.scale.x = lerp(camera_transform.scale.x, scale, 0.8);
-        camera_transform.scale.y = lerp(camera_transform.scale.y, scale, 0.8);
+        camera_transform.translation.x = lerp(camera_transform.translation.x, x, 0.3);
+        camera_transform.translation.y = lerp(camera_transform.translation.y, y, 0.3);
+        camera_transform.scale.x = lerp(camera_transform.scale.x, scale, 0.3);
+        camera_transform.scale.y = lerp(camera_transform.scale.y, scale, 0.3);
     }
 }
