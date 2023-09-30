@@ -173,6 +173,13 @@ fn player_movement(
             let movement = direction.normalize_or_zero() * (PLAYER_SPEED * time.delta_seconds());
             transform.translation.x += movement.x;
             transform.translation.y += movement.y;
+            let view_rotation = Vec2::Y.angle_between(movement);
+            if !view_rotation.is_nan() {
+                transform.rotation = transform.rotation.lerp(
+                    Quat::from_euler(EulerRot::XYZ, 0.0, 0.0, view_rotation),
+                    0.2,
+                );    
+            }
         }
     }
 }
@@ -231,13 +238,14 @@ fn camera_movement(
             )
         }
     };
-    fn lerp(a: f32, b: f32, factor: f32) -> f32 {
-        b * factor + a * (1.0 - factor)
-    }
     for mut camera_transform in param_set.p0().iter_mut() {
         camera_transform.translation.x = lerp(camera_transform.translation.x, x, 0.3);
         camera_transform.translation.y = lerp(camera_transform.translation.y, y, 0.3);
         camera_transform.scale.x = lerp(camera_transform.scale.x, scale, 0.3);
         camera_transform.scale.y = lerp(camera_transform.scale.y, scale, 0.3);
     }
+}
+
+fn lerp(a: f32, b: f32, factor: f32) -> f32 {
+    b * factor + a * (1.0 - factor)
 }
