@@ -1,9 +1,9 @@
+use crate::atlas::TilemapAtlas;
 use bevy::{
     prelude::{AssetServer, Assets, Handle, Image, Res},
     reflect::{TypePath, TypeUuid},
     sprite::TextureAtlas,
 };
-use crate::atlas::TilemapAtlas;
 
 #[derive(TypeUuid, TypePath)]
 #[uuid = "9ebbbcc1-0fc9-4c4f-841c-21b137bb0173"]
@@ -62,15 +62,15 @@ impl Tiles {
     }
 }
 
-pub struct Tilemap<'a> {
+pub struct Tilemap<'tileset> {
     width: usize,
     height: usize,
-    tile_set: &'a TileSet,
+    tile_set: &'tileset TileSet,
     tiles: Vec<isize>,
 }
 
-impl<'a> Tilemap<'a> {
-    pub fn new(tile_set : &'a TileSet, tiles : &Tiles) -> Option<Tilemap<'a>> {
+impl<'tileset> Tilemap<'tileset> {
+    pub fn new(tile_set: &'tileset TileSet, tiles: &Tiles) -> Option<Tilemap<'tileset>> {
         let height = tiles.tiles.len();
         let width = tiles.tiles.iter().map(|row| row.len()).max()?;
         Some(Tilemap {
@@ -97,19 +97,19 @@ impl<'a> Tilemap<'a> {
     }
 }
 
-pub struct TilemapAtlasResolver<'a, 'b> {
-    tilemap: &'b Tilemap<'a>,
-    asset_server: Res<'a, AssetServer>,
-    tilemap_atlas: Res<'a, TilemapAtlas>,
-    atlasses: Res<'a, Assets<TextureAtlas>>,
+pub struct TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
+    tilemap: &'tilemap Tilemap<'tileset>,
+    asset_server: Res<'res, AssetServer>,
+    tilemap_atlas: Res<'res, TilemapAtlas>,
+    atlasses: Res<'res, Assets<TextureAtlas>>,
 }
 
-impl<'a, 'b> TilemapAtlasResolver<'a, 'b> {
+impl<'res, 'tilemap, 'tileset> TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
     pub fn new(
-        tilemap: &'b Tilemap<'a>,
-        asset_server: Res<'a, AssetServer>,
-        tilemap_atlas: Res<'a, TilemapAtlas>,
-        atlasses: Res<'a, Assets<TextureAtlas>>,
+        tilemap: &'tilemap Tilemap<'tileset>,
+        asset_server: Res<'res, AssetServer>,
+        tilemap_atlas: Res<'res, TilemapAtlas>,
+        atlasses: Res<'res, Assets<TextureAtlas>>,
     ) -> Self {
         TilemapAtlasResolver {
             tilemap,
