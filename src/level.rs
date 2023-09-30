@@ -160,7 +160,7 @@ fn camera_movement(
         Query<(&Character, &Transform)>,
     )>,
 ) {
-    match camera_mode.current {
+    let (x, y, scale) = match camera_mode.current {
         CameraMode::AllCharacters => {
             let character_transforms: Vec<Transform> =
                 param_set.p2().iter().map(|c| c.1.clone()).collect();
@@ -182,12 +182,7 @@ fn camera_movement(
             let scale = (size_x / window_width).max(size_y / window_height);
             let scale = scale.max(CAMERA_SCALE);
             let center = Vec2::new((max_x + min_x) / 2.0, (max_y + min_y) / 2.0);
-            for mut camera_transform in param_set.p0().iter_mut() {
-                camera_transform.translation.x = center.x;
-                camera_transform.translation.y = center.y;
-                camera_transform.scale.x = scale;
-                camera_transform.scale.y = scale;
-            }
+            (center.x, center.y, scale)
         }
         CameraMode::CurrentCharacter => {
             let character_transform = param_set
@@ -198,12 +193,20 @@ fn camera_movement(
                 .next()
                 .unwrap()
                 .clone();
-            for mut camera_transform in param_set.p0().iter_mut() {
-                camera_transform.translation.x = character_transform.translation.x;
-                camera_transform.translation.y = character_transform.translation.y;
-                camera_transform.scale.x = CAMERA_SCALE;
-                camera_transform.scale.y = CAMERA_SCALE;
-            }
+            (
+                character_transform.translation.x,
+                character_transform.translation.y,
+                CAMERA_SCALE,
+            )
         }
+    };
+    fn lerp(a: f32, b: f32, factor: f32) -> f32 {
+        a * factor + b * (1.0 - factor)
+    }
+    for mut camera_transform in param_set.p0().iter_mut() {
+        camera_transform.translation.x = lerp(camera_transform.translation.x, x, 0.8);
+        camera_transform.translation.y = lerp(camera_transform.translation.y, y, 0.8);
+        camera_transform.scale.x = lerp(camera_transform.scale.x, scale, 0.8);
+        camera_transform.scale.y = lerp(camera_transform.scale.y, scale, 0.8);
     }
 }
