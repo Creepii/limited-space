@@ -15,8 +15,8 @@ impl Tilemap {
         todo!()
     }
 
-    fn get_texture_name_of_tile(&self, x: usize, y: usize) -> &str {
-        "tilemap/grass_edge.png"
+    fn get_texture_name_of_tile(&self, x: usize, y: usize) -> Option<&str> {
+        Some("tilemap/grass_edge.png")
     }
 }
 
@@ -48,9 +48,8 @@ impl<'a, 'b> TilemapAtlasResolver<'a, 'b> {
 
     pub fn get(&self, x: usize, y: usize) -> Option<usize> {
         let atlas: &TextureAtlas = self.atlasses.get(&self.atlas()).unwrap();
-        let handle: Handle<Image> = self
-            .asset_server
-            .get_handle(self.tilemap.get_texture_name_of_tile(x, y));
+        let texture_name = self.tilemap.get_texture_name_of_tile(x, y)?;
+        let handle: Handle<Image> = self.asset_server.get_handle(texture_name);
         atlas.get_texture_index(&handle)
     }
 }
