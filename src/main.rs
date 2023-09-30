@@ -1,11 +1,16 @@
+use atlas::AtlasPlugin;
 use bevy::{prelude::*, window::WindowResolution};
+use level::LevelPlugin;
 use menu::MenuPlugin;
 
+mod atlas;
+mod level;
 mod menu;
 
 #[derive(States, Debug, Default, Hash, Eq, PartialEq, Clone)]
 enum GameStates {
     #[default]
+    Loading,
     Menu,
     Level,
 }
@@ -24,6 +29,8 @@ fn main() {
             }),
             ..default()
         }))
+        .add_plugins(AtlasPlugin)
+        .add_plugins(LevelPlugin)
         .add_plugins(MenuPlugin)
         .run();
 }
