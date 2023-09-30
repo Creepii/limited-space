@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::loading::TilemapAtlas;
 use bevy::{
     prelude::{AssetServer, Assets, Handle, Image, Res},
@@ -8,7 +10,7 @@ use bevy::{
 #[derive(TypeUuid, TypePath)]
 #[uuid = "9ebbbcc1-0fc9-4c4f-841c-21b137bb0173"]
 pub struct TileSet {
-    texture_names: Vec<String>, // registry names of tiles
+    texture_names: BTreeMap<usize, String>, // registry names of tiles
 }
 
 impl TileSet {
@@ -18,9 +20,14 @@ impl TileSet {
             tiles
                 .iter()
                 .map(|tile| {
-                    tile["image"]
+                    let index = tile["id"].as_u64().map(|u| u as usize);
+                    let path = tile["image"]
                         .as_str()
-                        .map(|texture_name: &str| texture_name.to_string())
+                        .map(|texture_name: &str| texture_name.to_string());
+                    match (index, path) {
+                        (Some(index), Some(path)) => Some((index, path)),
+                        _ => None,
+                    }
                 })
                 .collect()
         })?;
@@ -34,7 +41,7 @@ impl TileSet {
             None
         } else {
             self.texture_names
-                .get(tile_type as usize)
+                .get(&(tile_type as usize))
                 .map(|s| s.as_str())
         }
     }
@@ -58,7 +65,7 @@ impl Tiles {
                     .collect::<Option<Vec<isize>>>()
             })
             .collect::<Option<Vec<Vec<isize>>>>()?;
-        Some(Tiles { tiles: tiles })
+        Some(Tiles { tiles })
     }
 }
 
