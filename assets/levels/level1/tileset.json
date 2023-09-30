@@ -8,16 +8,10 @@
  "margin":0,
  "name":"tileset",
  "spacing":0,
- "tilecount":4,
+ "tilecount":5,
  "tiledversion":"1.8.0",
  "tileheight":32,
  "tiles":[
-        {
-         "id":0,
-         "image":"tilemap\/dirt_fine.png",
-         "imageheight":32,
-         "imagewidth":32
-        }, 
         {
          "id":1,
          "image":"tilemap\/grass_edge.png",
@@ -33,6 +27,18 @@
         {
          "id":3,
          "image":"tilemap\/grass_outer_corner.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":4,
+         "image":"tilemap\/dirt_coarse.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":5,
+         "image":"tilemap\/dirt_fine.png",
          "imageheight":32,
          "imagewidth":32
         }],
