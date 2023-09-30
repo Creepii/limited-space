@@ -9,10 +9,10 @@ pub struct Tilemap;
 
 impl Tilemap {
     pub fn width(&self) -> usize {
-        todo!()
+        20
     }
     pub fn height(&self) -> usize {
-        todo!()
+        20
     }
 
     fn get_texture_name_of_tile(&self, x: usize, y: usize) -> Option<&str> {

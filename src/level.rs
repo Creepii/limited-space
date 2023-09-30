@@ -43,17 +43,23 @@ fn setup_level(
         Character::Turtle,
     ));
 
-    let tilemap = TilemapAtlasResolver::new(&Tilemap {}, asset_server, tilemap_atlas, atlasses);
-    commands.spawn(SpriteSheetBundle {
-        texture_atlas: tilemap.atlas(),
-        sprite: TextureAtlasSprite::new(tilemap.get(0, 0).unwrap()),
-        transform: Transform::from_translation(Vec3 {
-            x: 32.0,
-            y: 0.0,
-            z: 0.0,
-        }),
-        ..default()
-    });
+    let tilemap = Tilemap {};
+    let tilemap_resolver =
+        TilemapAtlasResolver::new(&tilemap, asset_server, tilemap_atlas, atlasses);
+    for x in 0..tilemap.width() {
+        for y in 0..tilemap.height() {
+            commands.spawn(SpriteSheetBundle {
+                texture_atlas: tilemap_resolver.atlas(),
+                sprite: TextureAtlasSprite::new(tilemap_resolver.get(x, y).unwrap()),
+                transform: Transform::from_translation(Vec3 {
+                    x: (x as f32) * 32.0,
+                    y: (y as f32) * 32.0,
+                    z: 0.0,
+                }),
+                ..default()
+            });
+        }
+    }
 }
 
 const PLAYER_SPEED: f32 = 64.0;
