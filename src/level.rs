@@ -17,23 +17,48 @@ impl Plugin for LevelPlugin {
         app.insert_resource(CurrentCameraMode {
             current: CameraMode::AllCharacters,
         });
-        app.add_systems(
-            Update,
-            switch_camera_mode.run_if(in_state(GameStates::Level)),
-        );
+        app.insert_resource(DiscoveredCharacters {
+            discovered: vec![Character::Turtle, Character::Rabbit],
+        });
+        app.add_systems(Update, switch_modes.run_if(in_state(GameStates::Level)));
         app.add_systems(Update, player_movement.run_if(in_state(GameStates::Level)));
         app.add_systems(Update, camera_movement.run_if(in_state(GameStates::Level)));
         app.add_systems(OnExit(GameStates::Level), cleanup_level);
     }
 }
 
-fn switch_camera_mode(keys: Res<Input<KeyCode>>, mut camera_mode: ResMut<CurrentCameraMode>) {
+fn switch_modes(
+    keys: Res<Input<KeyCode>>,
+    discovered: Res<DiscoveredCharacters>,
+    mut character: ResMut<CurrentCharacter>,
+    mut camera_mode: ResMut<CurrentCameraMode>,
+) {
     if keys.just_pressed(KeyCode::F) {
         camera_mode.toggle();
     }
+    let number_keys = [
+        KeyCode::Key0,
+        KeyCode::Key1,
+        KeyCode::Key2,
+        KeyCode::Key3,
+        KeyCode::Key4,
+        KeyCode::Key5,
+        KeyCode::Key6,
+        KeyCode::Key7,
+        KeyCode::Key8,
+        KeyCode::Key9,
+    ];
+    for (number, key) in number_keys.into_iter().skip(1).enumerate() {
+        if keys.just_pressed(key) {
+            let selected_character = discovered.discovered.get(number);
+            if let Some(selected) = selected_character {
+                character.current = selected.clone();
+            }
+        }
+    }
 }
 
-#[derive(Component, PartialEq, Eq)]
+#[derive(Component, PartialEq, Eq, Debug, Clone)]
 enum Character {
     Turtle,
     Rabbit,
@@ -42,6 +67,11 @@ enum Character {
 #[derive(Resource)]
 struct CurrentCharacter {
     current: Character,
+}
+
+#[derive(Resource)]
+struct DiscoveredCharacters {
+    discovered: Vec<Character>,
 }
 
 enum CameraMode {
