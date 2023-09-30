@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    atlas::TilemapAtlas,
+    loading::TilemapAtlas,
     tilemap::{TileSet, Tilemap, TilemapAtlasResolver, Tiles},
     GameStates, MainCamera,
 };

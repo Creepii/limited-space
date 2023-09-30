@@ -1,4 +1,4 @@
-use crate::atlas::TilemapAtlas;
+use crate::loading::TilemapAtlas;
 use bevy::{
     prelude::{AssetServer, Assets, Handle, Image, Res},
     reflect::{TypePath, TypeUuid},

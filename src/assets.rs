@@ -8,7 +8,7 @@ use crate::tilemap::{TileSet, Tiles};
 #[derive(Debug)]
 enum AssetLoaderError {
     TileSetError,
-    TilesError
+    TilesError,
 }
 
 impl std::error::Error for AssetLoaderError {}
@@ -32,8 +32,8 @@ impl AssetLoader for TileSetAssetLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
         Box::pin(async move {
-            let tile_set_asset =
-                TileSet::from_reader(bytes).ok_or(bevy::asset::Error::new(AssetLoaderError::TileSetError))?;
+            let tile_set_asset = TileSet::from_reader(bytes)
+                .ok_or(bevy::asset::Error::new(AssetLoaderError::TileSetError))?;
             load_context.set_default_asset(LoadedAsset::new(tile_set_asset));
             Ok(())
         })
@@ -54,8 +54,8 @@ impl AssetLoader for TilesAssetLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
         Box::pin(async move {
-            let tiles_asset =
-                Tiles::from_reader(bytes).ok_or(bevy::asset::Error::new(AssetLoaderError::TilesError))?;
+            let tiles_asset = Tiles::from_reader(bytes)
+                .ok_or(bevy::asset::Error::new(AssetLoaderError::TilesError))?;
             load_context.set_default_asset(LoadedAsset::new(tiles_asset));
             Ok(())
         })

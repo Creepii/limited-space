@@ -1,13 +1,13 @@
 use assets::{TileSetAssetLoader, TilesAssetLoader};
-use atlas::TilemapAtlasPlugin;
 use bevy::{prelude::*, window::WindowResolution};
 use level::LevelPlugin;
+use loading::TilemapAtlasPlugin;
 use menu::MenuPlugin;
 use tilemap::{TileSet, Tiles};
 
 mod assets;
-mod atlas;
 mod level;
+mod loading;
 mod menu;
 mod tilemap;
 
