@@ -23,6 +23,7 @@ fn main() {
     App::new()
         .add_state::<GameStates>()
         .insert_resource(ClearColor(Color::BLACK))
+        .insert_resource(Msaa::Off)
         .add_systems(Startup, setup_base)
         .add_plugins(
             DefaultPlugins
