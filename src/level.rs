@@ -105,7 +105,7 @@ fn setup_level(
                         x: (x as f32) * 32.0,
                         y: (y as f32) * 32.0,
                         z: 0.0,
-                    }),
+                    }).with_scale(Vec3::new(1.02, 1.02, 1.0)),
                     ..default()
                 });
             }
