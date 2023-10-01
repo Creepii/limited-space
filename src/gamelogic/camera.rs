@@ -49,14 +49,15 @@ const CAMERA_SCALE: f32 = 0.4;
 const CAMERA_PADDING: f32 = 128.0;
 
 fn camera_movement(
-    character: Res<CurrentCharacter>,
     camera_mode: Res<CurrentCameraMode>,
     mut param_set: ParamSet<(
         Query<&mut Transform, With<MainCamera>>,
         Query<&Window>,
         Query<(&Character, &Transform)>,
+        Query<&CurrentCharacter>,
     )>,
 ) {
+    let character = param_set.p3().single().current.clone();
     let (x, y, scale) = match camera_mode.current {
         CameraMode::AllCharacters => {
             let character_transforms: Vec<Transform> =
@@ -85,7 +86,7 @@ fn camera_movement(
             let character_transform = param_set
                 .p2()
                 .iter()
-                .filter(|c| c.0 == &character.current)
+                .filter(|c| c.0 == &character)
                 .map(|c| c.1)
                 .next()
                 .unwrap()
