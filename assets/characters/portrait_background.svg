@@ -25,9 +25,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="mm"
+     inkscape:document-units="pt"
      inkscape:zoom="8.2445"
-     inkscape:cx="27.83674"
+     inkscape:cx="28.079326"
      inkscape:cy="38.813755"
      inkscape:window-width="1920"
      inkscape:window-height="1024"
@@ -35,7 +35,16 @@
      inkscape:window-y="28"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
-     inkscape:export-bgcolor="#ffffff00" />
+     inkscape:export-bgcolor="#ffffff00"
+     showguides="true">
+    <sodipodi:guide
+       position="0,0"
+       orientation="-0.70710678,0.70710678"
+       id="guide1"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,134,229)" />
+  </sodipodi:namedview>
   <defs
      id="defs1" />
   <g
@@ -43,10 +52,16 @@
      inkscape:groupmode="layer"
      id="layer1">
     <circle
-       style="fill:#9dd500;stroke:#82b000;stroke-width:1.10675;fill-opacity:1;stroke-opacity:1"
+       style="fill:#e4e4e4;stroke:#d0d0d0;stroke-width:1.10675;fill-opacity:1;stroke-opacity:1"
        id="path1"
        cx="8.4666662"
        cy="8.4666662"
        r="7.1493492" />
+    <circle
+       style="fill:#e4e4e4;stroke:#d0d0d0;stroke-width:0.60699999;stroke-dasharray:none;fill-opacity:1;stroke-opacity:1"
+       id="path2"
+       cx="3.4217882"
+       cy="13.511545"
+       r="2.2841878" />
   </g>
 </svg>
