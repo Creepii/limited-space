@@ -1,5 +1,5 @@
 use bevy::{
-    audio::{Volume, VolumeLevel},
+    audio::{PlaybackMode, Volume, VolumeLevel},
     prelude::*,
 };
 
@@ -7,6 +7,8 @@ use crate::{
     physics::{Collider, CollisionBox},
     GameStates,
 };
+
+use super::level::PushButton;
 
 #[derive(Component, PartialEq, Eq, Debug, Clone)]
 pub enum Character {
@@ -65,6 +67,10 @@ impl Plugin for CharacterPlugin {
             Update,
             character_collisions.run_if(in_state(GameStates::Level)),
         );
+        app.add_systems(
+            Update,
+            trigger_push_buttons.run_if(in_state(GameStates::Level)),
+        );
         app.add_systems(Update, player_movement.run_if(in_state(GameStates::Level)));
     }
 }
@@ -77,7 +83,43 @@ fn collect_characters(keys: Res<Input<KeyCode>>, mut query: Query<&mut Discovere
     }
 }
 
+fn trigger_push_buttons(
+    asset_server: Res<AssetServer>,
+    mut buttons: Query<(
+        &CollisionBox,
+        &Transform,
+        &mut PushButton,
+        &mut Handle<Image>,
+    )>,
+    characters: Query<(&CollisionBox, &Transform, &Character), Without<PushButton>>,
+) {
+    for (button_box, button_trafo, mut button, mut button_texture) in &mut buttons {
+        let mut any_collided = false;
+        for (character_box, character_trafo, _character) in &characters {
+            let is_colliding = Collider::collide(
+                &character_box
+                    .to_collider(character_trafo.translation.x, character_trafo.translation.y),
+                &button_box.to_collider(button_trafo.translation.x, button_trafo.translation.y),
+            );
+            if is_colliding {
+                any_collided = true;
+            }
+        }
+        let prev_pressed = button.pressed;
+        if prev_pressed != any_collided {
+            button.pressed = any_collided;
+            *button_texture = if any_collided {
+                asset_server.load("tilemap/push_button_pressed.png")
+            } else {
+                asset_server.load("tilemap/push_button.png")
+            };
+        }
+    }
+}
+
 fn switch_characters(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     keys: Res<Input<KeyCode>>,
     mut query: Query<(&DiscoveredCharacters, &mut CurrentCharacter)>,
 ) {
@@ -99,6 +141,15 @@ fn switch_characters(
             for (discovered, mut current) in &mut query {
                 let selected_character = discovered.discovered.get(number);
                 if let Some(selected) = selected_character {
+                    commands.spawn(AudioBundle {
+                        source: asset_server.load("sounds/switch_character.ogg"),
+                        settings: PlaybackSettings {
+                            mode: PlaybackMode::Despawn,
+                            volume: Volume::new_absolute(1.0),
+                            speed: 1.0,
+                            paused: false,
+                        },
+                    });
                     current.current = selected.clone();
                 }
             }
@@ -118,6 +169,7 @@ fn summon_characters(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("characters/turtle.png"),
+            transform: Transform::from_xyz(0.0, 0.0, 10.0),
             ..default()
         },
         Character::Turtle,
@@ -126,7 +178,7 @@ fn summon_characters(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("characters/rabbit.png"),
-            transform: Transform::from_xyz(0.0, 64.0, 0.0),
+            transform: Transform::from_xyz(0.0, 64.0, 10.0),
             ..default()
         },
         Character::Rabbit,
