@@ -11,6 +11,7 @@ mod loading;
 mod menu;
 mod tilemap;
 mod util;
+mod physics;
 
 #[derive(States, Debug, Default, Hash, Eq, PartialEq, Clone)]
 enum GameStates {
