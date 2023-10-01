@@ -6,15 +6,15 @@ use bevy::{
     utils::default,
 };
 
-use crate::GameStates;
+use crate::GameState;
 
 pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameStates::Menu), setup_menu);
+        app.add_systems(OnEnter(GameState::Menu), setup_menu);
         app.add_systems(Update, button_interactions);
-        app.add_systems(OnExit(GameStates::Menu), cleanup_menu);
+        app.add_systems(OnExit(GameState::Menu), cleanup_menu);
     }
 }
 
@@ -54,14 +54,14 @@ impl ButtonKinds {
 fn button_interactions(
     mut query: Query<(&Interaction, &mut BackgroundColor, &ButtonKinds), Changed<Interaction>>,
     mut exit: EventWriter<AppExit>,
-    mut state: ResMut<NextState<GameStates>>,
+    mut state: ResMut<NextState<GameState>>,
 ) {
     for (interaction, mut bg_color, button) in &mut query {
         *bg_color = BackgroundColor(button.get_color(interaction));
         match *interaction {
             Interaction::Pressed => match button {
                 ButtonKinds::Start => {
-                    state.set(GameStates::Level);
+                    state.set(GameState::InGame);
                 }
                 ButtonKinds::Quit => {
                     exit.send(AppExit);

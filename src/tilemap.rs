@@ -106,17 +106,17 @@ impl<'tileset> Tilemap<'tileset> {
 
 pub struct TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
     tilemap: &'tilemap Tilemap<'tileset>,
-    asset_server: Res<'res, AssetServer>,
-    tilemap_atlas: Res<'res, TilemapAtlas>,
-    atlasses: Res<'res, Assets<TextureAtlas>>,
+    asset_server: &'tilemap Res<'res, AssetServer>,
+    tilemap_atlas: &'tilemap Res<'res, TilemapAtlas>,
+    atlasses: &'tilemap Res<'res, Assets<TextureAtlas>>,
 }
 
 impl<'res, 'tilemap, 'tileset> TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
     pub fn new(
         tilemap: &'tilemap Tilemap<'tileset>,
-        asset_server: Res<'res, AssetServer>,
-        tilemap_atlas: Res<'res, TilemapAtlas>,
-        atlasses: Res<'res, Assets<TextureAtlas>>,
+        asset_server: &'tilemap Res<'res, AssetServer>,
+        tilemap_atlas: &'tilemap Res<'res, TilemapAtlas>,
+        atlasses: &'tilemap Res<'res, Assets<TextureAtlas>>,
     ) -> Self {
         TilemapAtlasResolver {
             tilemap,

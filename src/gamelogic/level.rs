@@ -3,12 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{
-    loading::TilemapAtlas,
-    physics::CollisionBox,
-    tilemap::{TileSet, Tilemap, TilemapAtlasResolver, Tiles},
-    GameStates,
-};
+use crate::{physics::CollisionBox, GameState};
 
 #[derive(Component, Debug)]
 pub struct PushButton {
@@ -44,7 +39,7 @@ fn play_button_sound(
     }
 }
 
-fn create_push_button(
+pub fn create_push_button(
     asset_server: &Res<AssetServer>,
     commands: &mut Commands,
     transform: Transform,
@@ -80,23 +75,15 @@ pub struct LevelPlugin;
 
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameStates::Level), setup_level);
         app.add_systems(
             Update,
-            play_button_sound.run_if(in_state(GameStates::Level)),
+            play_button_sound.run_if(in_state(GameState::InGame)),
         );
-        app.add_systems(OnExit(GameStates::Level), cleanup_level);
+        app.add_systems(OnEnter(GameState::InGame), start_music);
     }
 }
 
-fn setup_level(
-    asset_server: Res<AssetServer>,
-    tilemap_atlas: Res<TilemapAtlas>,
-    atlasses: Res<Assets<TextureAtlas>>,
-    tiles_atlas: Res<Assets<Tiles>>,
-    tile_set_atlas: Res<Assets<TileSet>>,
-    mut commands: Commands,
-) {
+fn start_music(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(AudioBundle {
         source: asset_server.load("sounds/music.ogg"),
         settings: PlaybackSettings {
@@ -106,41 +93,4 @@ fn setup_level(
             paused: false,
         },
     });
-
-    create_push_button(
-        &asset_server,
-        &mut commands,
-        Transform::from_xyz(64.0, 64.0, 5.0),
-        0,
-        Color::rgb(0.8, 0.2, 0.2),
-    );
-
-    let tiles_asset: Handle<Tiles> = asset_server.load("levels/level1/tilemap_ground.csv");
-    let tile_set_asset: Handle<TileSet> = asset_server.load("levels/level1/tileset.json");
-    let tilemap = Tilemap::new(
-        tile_set_atlas.get(&tile_set_asset).unwrap(),
-        tiles_atlas.get(&tiles_asset).unwrap(),
-    )
-    .unwrap();
-    let tilemap_resolver =
-        TilemapAtlasResolver::new(&tilemap, asset_server, tilemap_atlas, atlasses);
-    for x in 0..tilemap.width() {
-        for y in 0..tilemap.height() {
-            if let Some(tile) = tilemap_resolver.get(x, y) {
-                commands.spawn(SpriteSheetBundle {
-                    texture_atlas: tilemap_resolver.atlas(),
-                    sprite: TextureAtlasSprite::new(tile),
-                    transform: Transform::from_translation(Vec3 {
-                        x: (x as f32) * 32.0,
-                        y: (y as f32) * 32.0,
-                        z: 0.0,
-                    })
-                    .with_scale(Vec3::new(1.02, 1.02, 1.0)),
-                    ..default()
-                });
-            }
-        }
-    }
 }
-
-fn cleanup_level() {}

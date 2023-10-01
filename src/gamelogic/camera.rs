@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{util::Lerp, GameStates, MainCamera};
+use crate::{util::Lerp, GameState, MainCamera};
 
 use super::character::{Character, CurrentCharacter, DiscoveredCharacters};
 
@@ -23,9 +23,9 @@ impl Plugin for CameraControlPlugin {
         });
         app.add_systems(
             Update,
-            switch_camera_mode.run_if(in_state(GameStates::Level)),
+            switch_camera_mode.run_if(in_state(GameState::InGame)),
         );
-        app.add_systems(Update, camera_movement.run_if(in_state(GameStates::Level)));
+        app.add_systems(Update, camera_movement.run_if(in_state(GameState::InGame)));
     }
 }
 
@@ -60,7 +60,7 @@ fn camera_movement(
     let (character, discovered) = if let Ok((character, discovered)) = param_set.p3().get_single() {
         (character.current.clone(), discovered.discovered.clone())
     } else {
-        panic!("no player!?");
+        return;
     };
     let (x, y, scale) = match camera_mode.current {
         CameraMode::AllCharacters => {

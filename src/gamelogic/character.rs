@@ -5,7 +5,7 @@ use bevy::{
 
 use crate::{
     physics::{Collider, CollisionBox},
-    GameStates,
+    GameState,
 };
 
 use super::level::PushButton;
@@ -33,6 +33,18 @@ impl Character {
             Character::Crocodile => asset_server.load("characters/crocodile_face.png"),
         }
     }
+
+    pub fn texture(&self, asset_server: &Res<AssetServer>) -> Handle<Image> {
+        match self {
+            Character::Turtle => asset_server.load("characters/turtle.png"),
+            Character::Rabbit => asset_server.load("characters/rabbit.png"),
+            Character::Crocodile => asset_server.load("characters/crocodile.png"),
+        }
+    }
+
+    pub fn collision_box(&self) -> CollisionBox {
+        CollisionBox::Circle { radius: 18.0 }
+    }
 }
 
 #[derive(Component)]
@@ -47,39 +59,26 @@ pub struct DiscoveredCharacters {
 
 #[derive(Bundle)]
 pub struct PlayerBundle {
-    current: CurrentCharacter,
-    discovered: DiscoveredCharacters,
+    pub current: CurrentCharacter,
+    pub discovered: DiscoveredCharacters,
 }
 
 pub struct CharacterPlugin;
 impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameStates::Level), summon_characters);
         app.add_systems(
             Update,
-            switch_characters.run_if(in_state(GameStates::Level)),
+            switch_characters.run_if(in_state(GameState::InGame)),
         );
         app.add_systems(
             Update,
-            collect_characters.run_if(in_state(GameStates::Level)),
+            trigger_meet_character.run_if(in_state(GameState::InGame)),
         );
         app.add_systems(
             Update,
-            character_collisions.run_if(in_state(GameStates::Level)),
+            trigger_push_buttons.run_if(in_state(GameState::InGame)),
         );
-        app.add_systems(
-            Update,
-            trigger_push_buttons.run_if(in_state(GameStates::Level)),
-        );
-        app.add_systems(Update, player_movement.run_if(in_state(GameStates::Level)));
-    }
-}
-
-fn collect_characters(keys: Res<Input<KeyCode>>, mut query: Query<&mut DiscoveredCharacters>) {
-    if keys.just_pressed(KeyCode::Z) {
-        for mut discovered in &mut query {
-            discovered.discovered.push(Character::Crocodile);
-        }
+        app.add_systems(Update, player_movement.run_if(in_state(GameState::InGame)));
     }
 }
 
@@ -160,36 +159,7 @@ fn switch_characters(
     }
 }
 
-fn summon_characters(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(PlayerBundle {
-        current: CurrentCharacter {
-            current: Character::Turtle,
-        },
-        discovered: DiscoveredCharacters {
-            discovered: vec![Character::Turtle],
-        },
-    });
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("characters/turtle.png"),
-            transform: Transform::from_xyz(0.0, 0.0, 10.0),
-            ..default()
-        },
-        Character::Turtle,
-        CollisionBox::Circle { radius: 18.0 },
-    ));
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("characters/rabbit.png"),
-            transform: Transform::from_xyz(0.0, 64.0, 10.0),
-            ..default()
-        },
-        Character::Rabbit,
-        CollisionBox::Circle { radius: 18.0 },
-    ));
-}
-
-fn on_character_collision(
+fn on_meet_character(
     first: &Character,
     second: &Character,
     mut discovered: Mut<DiscoveredCharacters>,
@@ -227,7 +197,7 @@ fn on_character_collision(
     }
 }
 
-fn character_collisions(
+fn trigger_meet_character(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     query: Query<(&Character, &CollisionBox, &Transform)>,
@@ -246,7 +216,7 @@ fn character_collisions(
             };
             if Collider::collide(&collider_a, &collider_b) {
                 let (discovered, current) = player_query.single_mut();
-                on_character_collision(
+                on_meet_character(
                     collidables[i].0,
                     collidables[j].0,
                     discovered,
@@ -267,34 +237,36 @@ fn player_movement(
     player_query: Query<&CurrentCharacter>,
     mut query: Query<(&Character, &mut Transform)>,
 ) {
-    let current = player_query.single().current.clone();
-    for (character, mut transform) in &mut query {
-        if &current == character {
-            let direction = Vec2::new(
-                if keys.pressed(KeyCode::A) {
-                    -1.0
-                } else if keys.pressed(KeyCode::D) {
-                    1.0
-                } else {
-                    0.0
-                },
-                if keys.pressed(KeyCode::W) {
-                    1.0
-                } else if keys.pressed(KeyCode::S) {
-                    -1.0
-                } else {
-                    0.0
-                },
-            );
-            let movement = direction.normalize_or_zero() * (PLAYER_SPEED * time.delta_seconds());
-            transform.translation.x += movement.x;
-            transform.translation.y += movement.y;
-            let view_rotation = Vec2::Y.angle_between(movement);
-            if !view_rotation.is_nan() {
-                transform.rotation = transform.rotation.lerp(
-                    Quat::from_euler(EulerRot::XYZ, 0.0, 0.0, view_rotation),
-                    0.2,
+    if let Ok(current) = player_query.get_single() {
+        for (character, mut transform) in &mut query {
+            if &current.current == character {
+                let direction = Vec2::new(
+                    if keys.pressed(KeyCode::A) {
+                        -1.0
+                    } else if keys.pressed(KeyCode::D) {
+                        1.0
+                    } else {
+                        0.0
+                    },
+                    if keys.pressed(KeyCode::W) {
+                        1.0
+                    } else if keys.pressed(KeyCode::S) {
+                        -1.0
+                    } else {
+                        0.0
+                    },
                 );
+                let movement =
+                    direction.normalize_or_zero() * (PLAYER_SPEED * time.delta_seconds());
+                transform.translation.x += movement.x;
+                transform.translation.y += movement.y;
+                let view_rotation = Vec2::Y.angle_between(movement);
+                if !view_rotation.is_nan() {
+                    transform.rotation = transform.rotation.lerp(
+                        Quat::from_euler(EulerRot::XYZ, 0.0, 0.0, view_rotation),
+                        0.2,
+                    );
+                }
             }
         }
     }

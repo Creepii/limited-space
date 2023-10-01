@@ -9,6 +9,7 @@ mod camera;
 mod character;
 mod indicator;
 mod level;
+pub mod level_mgr;
 
 pub struct GameLogicPlugins;
 

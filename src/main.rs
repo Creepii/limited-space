@@ -1,7 +1,10 @@
 use assets::{TileSetAssetLoader, TilesAssetLoader};
 use bevy::{prelude::*, window::WindowResolution};
-use gamelogic::GameLogicPlugins;
-use loading::LoadingPlugin;
+use gamelogic::{
+    level_mgr::{LevelManager, ManagedLevel},
+    GameLogicPlugins,
+};
+use loading::{LoadingPlugin, TilemapAtlas};
 use menu::MenuPlugin;
 use tilemap::{TileSet, Tiles};
 
@@ -14,19 +17,20 @@ mod tilemap;
 mod util;
 
 #[derive(States, Debug, Default, Hash, Eq, PartialEq, Clone)]
-enum GameStates {
+enum GameState {
     #[default]
     Loading,
     Menu,
-    Level,
+    InGame,
 }
 
 fn main() {
     App::new()
-        .add_state::<GameStates>()
+        .add_state::<GameState>()
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Msaa::Off)
         .add_systems(Startup, setup_base)
+        .add_systems(OnEnter(GameState::InGame), load_current_level)
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -61,4 +65,28 @@ fn setup_base(mut commands: Commands) {
         },
         MainCamera,
     ));
+    commands.spawn(LevelManager {
+        current: ManagedLevel::Level1,
+    });
+}
+
+fn load_current_level(
+    asset_server: Res<AssetServer>,
+    tilemap_atlas: Res<TilemapAtlas>,
+    atlasses: Res<Assets<TextureAtlas>>,
+    tiles: Res<Assets<Tiles>>,
+    tilesets: Res<Assets<TileSet>>,
+    commands: Commands,
+    query: Query<&LevelManager>,
+) {
+    let manager = query.single();
+    manager.load_level(
+        manager.current,
+        asset_server,
+        tilemap_atlas,
+        atlasses,
+        tiles,
+        tilesets,
+        commands,
+    );
 }

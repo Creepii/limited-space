@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::GameStates;
+use crate::GameState;
 
 use super::character::{Character, CurrentCharacter, DiscoveredCharacters};
 
@@ -16,14 +16,14 @@ pub struct IndicatorPlugin;
 
 impl Plugin for IndicatorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameStates::Level), create_overlay);
+        app.add_systems(OnEnter(GameState::InGame), create_overlay);
         app.add_systems(
             Update,
-            update_indicators.run_if(in_state(GameStates::Level)),
+            update_indicators.run_if(in_state(GameState::InGame)),
         );
         app.add_systems(
             Update,
-            update_character_indicators.run_if(in_state(GameStates::Level)),
+            update_character_indicators.run_if(in_state(GameState::InGame)),
         );
     }
 }
@@ -159,13 +159,14 @@ fn update_character_indicators(
     character: Query<&CurrentCharacter>,
     mut query: Query<(&mut Visibility, &CharacterIndicator)>,
 ) {
-    let character = character.single().current.clone();
-    for (mut color, indicator) in &mut query {
-        let is_selected = character == indicator.character;
-        *color = if is_selected {
-            Visibility::Visible
-        } else {
-            Visibility::Hidden
-        };
+    if let Ok(character) = character.get_single() {
+        for (mut color, indicator) in &mut query {
+            let is_selected = character.current == indicator.character;
+            *color = if is_selected {
+                Visibility::Visible
+            } else {
+                Visibility::Hidden
+            };
+        }
     }
 }

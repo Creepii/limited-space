@@ -1,6 +1,6 @@
 use bevy::{asset::HandleId, prelude::*};
 
-use crate::GameStates;
+use crate::GameState;
 
 pub struct LoadingPlugin;
 
@@ -11,9 +11,9 @@ impl Plugin for LoadingPlugin {
             handles: Vec::new(),
         })
         .insert_resource(TilemapAtlas { tilemap: None })
-        .add_systems(OnEnter(GameStates::Loading), start_loading)
-        .add_systems(Update, check_loaded.run_if(in_state(GameStates::Loading)))
-        .add_systems(OnExit(GameStates::Loading), finish_loading);
+        .add_systems(OnEnter(GameState::Loading), start_loading)
+        .add_systems(Update, check_loaded.run_if(in_state(GameState::Loading)))
+        .add_systems(OnExit(GameState::Loading), finish_loading);
     }
 }
 
@@ -48,7 +48,7 @@ fn start_loading(asset_server: Res<AssetServer>, mut loading_resources: ResMut<L
 fn check_loaded(
     asset_server: Res<AssetServer>,
     loading_resources: Res<LoadingResources>,
-    mut state: ResMut<NextState<GameStates>>,
+    mut state: ResMut<NextState<GameState>>,
     mut events: EventReader<AssetEvent<Image>>,
 ) {
     for _ in &mut events {
@@ -59,7 +59,7 @@ fn check_loaded(
                 .map(|h| h.id())
                 .collect::<Vec<HandleId>>(),
         ) {
-            bevy::asset::LoadState::Loaded => state.set(GameStates::Menu),
+            bevy::asset::LoadState::Loaded => state.set(GameState::Menu),
             _ => (),
         }
     }
