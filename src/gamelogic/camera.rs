@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{util::Lerp, GameStates, MainCamera};
 
-use super::character::{Character, CurrentCharacter};
+use super::character::{Character, CurrentCharacter, DiscoveredCharacters};
 
 enum CameraMode {
     AllCharacters,
@@ -19,7 +19,7 @@ pub struct CameraControlPlugin;
 impl Plugin for CameraControlPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CurrentCameraMode {
-            current: CameraMode::AllCharacters,
+            current: CameraMode::CurrentCharacter,
         });
         app.add_systems(
             Update,
@@ -54,14 +54,22 @@ fn camera_movement(
         Query<&mut Transform, With<MainCamera>>,
         Query<&Window>,
         Query<(&Character, &Transform)>,
-        Query<&CurrentCharacter>,
+        Query<(&CurrentCharacter, &DiscoveredCharacters)>,
     )>,
 ) {
-    let character = param_set.p3().single().current.clone();
+    let (character, discovered) = if let Ok((character, discovered)) = param_set.p3().get_single() {
+        (character.current.clone(), discovered.discovered.clone())
+    } else {
+        panic!("no player!?");
+    };
     let (x, y, scale) = match camera_mode.current {
         CameraMode::AllCharacters => {
-            let character_transforms: Vec<Transform> =
-                param_set.p2().iter().map(|c| c.1.clone()).collect();
+            let character_transforms: Vec<Transform> = param_set
+                .p2()
+                .iter()
+                .filter(|c| discovered.contains(c.0))
+                .map(|c| c.1.clone())
+                .collect();
             let ((min_x, max_x), (min_y, max_y)) = character_transforms
                 .iter()
                 .map(|t| (t.translation.x, t.translation.y))

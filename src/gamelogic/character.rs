@@ -102,7 +102,7 @@ fn summon_characters(mut commands: Commands, asset_server: Res<AssetServer>) {
             current: Character::Turtle,
         },
         discovered: DiscoveredCharacters {
-            discovered: vec![Character::Turtle, Character::Rabbit],
+            discovered: vec![Character::Turtle],
         },
     });
     commands.spawn((

@@ -9,9 +9,9 @@ mod assets;
 mod gamelogic;
 mod loading;
 mod menu;
+mod physics;
 mod tilemap;
 mod util;
-mod physics;
 
 #[derive(States, Debug, Default, Hash, Eq, PartialEq, Clone)]
 enum GameStates {
