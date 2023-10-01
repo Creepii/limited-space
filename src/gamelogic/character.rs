@@ -1,5 +1,5 @@
 use bevy::{
-    audio::{Volume, VolumeLevel},
+    audio::{PlaybackMode, Volume, VolumeLevel},
     prelude::*,
 };
 
@@ -78,6 +78,8 @@ fn collect_characters(keys: Res<Input<KeyCode>>, mut query: Query<&mut Discovere
 }
 
 fn switch_characters(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     keys: Res<Input<KeyCode>>,
     mut query: Query<(&DiscoveredCharacters, &mut CurrentCharacter)>,
 ) {
@@ -99,6 +101,15 @@ fn switch_characters(
             for (discovered, mut current) in &mut query {
                 let selected_character = discovered.discovered.get(number);
                 if let Some(selected) = selected_character {
+                    commands.spawn(AudioBundle {
+                        source: asset_server.load("sounds/switch_character.ogg"),
+                        settings: PlaybackSettings {
+                            mode: PlaybackMode::Despawn,
+                            volume: Volume::new_absolute(1.0),
+                            speed: 1.0,
+                            paused: false,
+                        },
+                    });
                     current.current = selected.clone();
                 }
             }
