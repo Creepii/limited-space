@@ -17,6 +17,7 @@ use super::{
 #[repr(u8)]
 pub enum ManagedLevel {
     Level1,
+    Level2,
 }
 
 static LEVEL_DATAS: OnceLock<Vec<LevelData>> = OnceLock::new();
@@ -24,30 +25,56 @@ static LEVEL_DATAS: OnceLock<Vec<LevelData>> = OnceLock::new();
 impl ManagedLevel {
     fn get_data(&self) -> &'static LevelData {
         &LEVEL_DATAS.get_or_init(|| {
-            vec![LevelData {
-                next_level: ManagedLevel::Level1,
-                flag_position: Vec2::new(128.0, 32.0),
-                tileset: "levels/level1/tileset.json".to_string(),
-                tilemap_layers: vec!["levels/level1/tilemap_ground.csv".to_string()],
-                starting_character: Character::Turtle,
-                characters: vec![
-                    CharacterData {
-                        is_discovered: true,
-                        character: Character::Turtle,
-                        starting_position: Vec2::new(0.0, 0.0),
-                    },
-                    CharacterData {
-                        is_discovered: false,
-                        character: Character::Rabbit,
-                        starting_position: Vec2::new(64.0, 0.0),
-                    },
-                ],
-                buttons: vec![ButtonData {
-                    position: Vec2::new(64.0, 64.0),
-                    index: 0,
-                    color: Color::rgb(0.8, 0.2, 0.2),
-                }],
-            }]
+            vec![
+                LevelData {
+                    next_level: Some(ManagedLevel::Level2),
+                    flag_position: Vec2::new(128.0, 32.0),
+                    tileset: "levels/level1/tileset.json".to_string(),
+                    tilemap_layers: vec!["levels/level1/tilemap_ground.csv".to_string()],
+                    starting_character: Character::Turtle,
+                    characters: vec![
+                        CharacterData {
+                            is_discovered: true,
+                            character: Character::Turtle,
+                            starting_position: Vec2::new(0.0, 0.0),
+                        },
+                        CharacterData {
+                            is_discovered: false,
+                            character: Character::Rabbit,
+                            starting_position: Vec2::new(64.0, 0.0),
+                        },
+                    ],
+                    buttons: vec![ButtonData {
+                        position: Vec2::new(64.0, 64.0),
+                        index: 0,
+                        color: Color::rgb(0.8, 0.2, 0.2),
+                    }],
+                },
+                LevelData {
+                    next_level: None,
+                    flag_position: Vec2::new(256.0, 32.0),
+                    tileset: "levels/level1/tileset.json".to_string(),
+                    tilemap_layers: vec!["levels/level1/tilemap_ground.csv".to_string()],
+                    starting_character: Character::Turtle,
+                    characters: vec![
+                        CharacterData {
+                            is_discovered: true,
+                            character: Character::Turtle,
+                            starting_position: Vec2::new(0.0, 0.0),
+                        },
+                        CharacterData {
+                            is_discovered: true,
+                            character: Character::Crocodile,
+                            starting_position: Vec2::new(64.0, 0.0),
+                        },
+                    ],
+                    buttons: vec![ButtonData {
+                        position: Vec2::new(64.0, 64.0),
+                        index: 0,
+                        color: Color::rgb(0.8, 0.2, 0.2),
+                    }],
+                },
+            ]
         })[(*self as u8) as usize]
     }
 }
@@ -65,7 +92,7 @@ struct ButtonData {
 }
 
 struct LevelData {
-    next_level: ManagedLevel,
+    next_level: Option<ManagedLevel>,
     tileset: String,
     tilemap_layers: Vec<String>,
     flag_position: Vec2,
@@ -76,7 +103,8 @@ struct LevelData {
 
 #[derive(Component)]
 pub struct LevelManager {
-    pub current: ManagedLevel,
+    pub current: Option<ManagedLevel>,
+    pub next: Option<ManagedLevel>,
 }
 
 #[derive(Component)]
@@ -105,9 +133,10 @@ impl LevelManager {
         tilesets: Res<'world, Assets<TileSet>>,
         mut commands: Commands<'world, 'cmd>,
     ) {
-        let data = self.current.get_data();
+        info!("Loading level: {:?}", self.next);
+        let data = self.next.unwrap().get_data();
         let mut ctx = LevelLoadContext {
-            level: self.current.clone(),
+            level: self.next.unwrap().clone(),
             data,
             asset_server: &asset_server,
             tilemap_atlas: &tilemap_atlas,
@@ -122,19 +151,13 @@ impl LevelManager {
         ctx.create_characters();
     }
 
-    pub fn unload_level<'q, I>(
-        &self,
-        commands: &mut Commands,
-        mut discovered: Query<&mut DiscoveredCharacters>,
-        iter: I,
-    ) where
+    pub fn unload_level<'q, I>(&self, commands: &mut Commands, iter: I)
+    where
         I: Iterator<Item = (Entity, &'q LoadedLevel)>,
     {
-        if let Ok(mut discovered) = discovered.get_single_mut() {
-            discovered.discovered = Vec::new();
-        }
+        info!("Unloading level: {:?}", self.current);
         for (entity, loaded) in iter {
-            if loaded.level == self.current {
+            if loaded.level == self.current.unwrap() {
                 commands.entity(entity).despawn_recursive();
             }
         }
@@ -268,13 +291,18 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 },
             ));
         }
-        self.commands.spawn((PlayerBundle {
-            current: CurrentCharacter {
-                current: self.data.starting_character.clone(),
+        self.commands.spawn((
+            PlayerBundle {
+                current: CurrentCharacter {
+                    current: self.data.starting_character.clone(),
+                },
+                discovered: DiscoveredCharacters {
+                    discovered: discovered,
+                },
             },
-            discovered: DiscoveredCharacters {
-                discovered: discovered,
+            LoadedLevel {
+                level: self.level.clone(),
             },
-        },));
+        ));
     }
 }

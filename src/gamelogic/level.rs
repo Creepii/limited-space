@@ -15,7 +15,7 @@ pub struct PushButton {
 
 #[derive(Component)]
 pub struct GoalFlag {
-    pub next_level: ManagedLevel,
+    pub next_level: Option<ManagedLevel>,
     pub reached: bool,
 }
 

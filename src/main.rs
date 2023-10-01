@@ -1,7 +1,6 @@
 use assets::{TileSetAssetLoader, TilesAssetLoader};
 use bevy::{prelude::*, window::WindowResolution};
 use gamelogic::{
-    character::DiscoveredCharacters,
     level_mgr::{LevelManager, LoadedLevel, ManagedLevel},
     GameLogicPlugins,
 };
@@ -67,12 +66,12 @@ fn setup_base(mut commands: Commands) {
         MainCamera,
     ));
     commands.spawn(LevelManager {
-        current: ManagedLevel::Level1,
+        current: None,
+        next: Some(ManagedLevel::Level1),
     });
 }
 
 fn level_loading(
-    discovered: Query<&mut DiscoveredCharacters>,
     level_entities: Query<(Entity, &LoadedLevel)>,
     asset_server: Res<AssetServer>,
     tilemap_atlas: Res<TilemapAtlas>,
@@ -80,10 +79,10 @@ fn level_loading(
     tiles: Res<Assets<Tiles>>,
     tilesets: Res<Assets<TileSet>>,
     mut commands: Commands,
-    query: Query<&LevelManager, Changed<LevelManager>>,
+    mut query: Query<&mut LevelManager, Changed<LevelManager>>,
 ) {
-    if let Ok(manager) = query.get_single() {
-        manager.unload_level(&mut commands, discovered, level_entities.iter());
+    if let Ok(mut manager) = query.get_single_mut() {
+        manager.unload_level(&mut commands, level_entities.iter());
         manager.load_level(
             asset_server,
             tilemap_atlas,
@@ -92,5 +91,7 @@ fn level_loading(
             tilesets,
             commands,
         );
+        manager.current = manager.next;
+        manager.next = None;
     }
 }

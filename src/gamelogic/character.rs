@@ -117,7 +117,9 @@ fn trigger_flag(
                     paused: false,
                 },
             });
-            manager.single_mut().current = flag.next_level;
+            if let Some(next) = flag.next_level {
+                manager.single_mut().next = Some(next);
+            }
         }
     }
 }
