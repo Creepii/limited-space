@@ -1,15 +1,16 @@
 use assets::{TileSetAssetLoader, TilesAssetLoader};
 use bevy::{prelude::*, window::WindowResolution};
-use level::LevelPlugin;
+use gamelogic::GameLogicPlugins;
 use loading::LoadingPlugin;
 use menu::MenuPlugin;
 use tilemap::{TileSet, Tiles};
 
 mod assets;
-mod level;
+mod gamelogic;
 mod loading;
 mod menu;
 mod tilemap;
+mod util;
 
 #[derive(States, Debug, Default, Hash, Eq, PartialEq, Clone)]
 enum GameStates {
@@ -39,7 +40,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest()),
         )
         .add_plugins(LoadingPlugin)
-        .add_plugins(LevelPlugin)
+        .add_plugins(GameLogicPlugins)
         .add_plugins(MenuPlugin)
         .add_asset::<Tiles>()
         .add_asset::<TileSet>()
