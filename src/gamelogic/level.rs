@@ -29,7 +29,7 @@ fn setup_level(
         source: asset_server.load("sounds/music.ogg"),
         settings: PlaybackSettings {
             mode: PlaybackMode::Loop,
-            volume: Volume::Absolute(VolumeLevel::new(1.0)),
+            volume: Volume::new_absolute(1.0),
             speed: 1.0,
             paused: false,
         },
