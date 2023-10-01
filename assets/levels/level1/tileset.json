@@ -8,7 +8,7 @@
  "margin":0,
  "name":"tileset",
  "spacing":0,
- "tilecount":32,
+ "tilecount":33,
  "tiledversion":"1.8.0",
  "tileheight":32,
  "tiles":[
@@ -201,6 +201,12 @@
         {
          "id":37,
          "image":"tilemap\/flowers.png",
+         "imageheight":32,
+         "imagewidth":32
+        }, 
+        {
+         "id":39,
+         "image":"tilemap\/flag.png",
          "imageheight":32,
          "imagewidth":32
         }],
