@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    audio::{Volume, VolumeLevel},
+    prelude::*,
+};
 
 use crate::{
     physics::{Collider, CollisionBox},
@@ -136,21 +139,42 @@ fn on_character_collision(
     second: &Character,
     mut discovered: Mut<DiscoveredCharacters>,
     current: &CurrentCharacter,
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
 ) {
-    if first == &current.current {
+    let new_character = if first == &current.current {
         if !discovered.discovered.contains(second) {
-            info!("New character: {:?}", second);
-            discovered.discovered.push(second.clone());
+            Some(second)
+        } else {
+            None
         }
     } else if second == &current.current {
         if !discovered.discovered.contains(first) {
-            info!("New character: {:?}", first);
-            discovered.discovered.push(first.clone());
+            Some(first)
+        } else {
+            None
         }
+    } else {
+        None
+    };
+    if let Some(new_character) = new_character {
+        info!("New character: {:?}", new_character);
+        commands.spawn(AudioBundle {
+            settings: PlaybackSettings {
+                mode: bevy::audio::PlaybackMode::Despawn,
+                volume: Volume::Absolute(VolumeLevel::new(1.0)),
+                speed: 1.0,
+                paused: false,
+            },
+            source: asset_server.load("sounds/coin.ogg"),
+        });
+        discovered.discovered.push(new_character.clone());
     }
 }
 
 fn character_collisions(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     query: Query<(&Character, &CollisionBox, &Transform)>,
     mut player_query: Query<(&mut DiscoveredCharacters, &CurrentCharacter)>,
 ) {
@@ -167,7 +191,14 @@ fn character_collisions(
             };
             if Collider::collide(&collider_a, &collider_b) {
                 let (discovered, current) = player_query.single_mut();
-                on_character_collision(collidables[i].0, collidables[j].0, discovered, current);
+                on_character_collision(
+                    collidables[i].0,
+                    collidables[j].0,
+                    discovered,
+                    current,
+                    &mut commands,
+                    &asset_server,
+                );
             }
         }
     }
