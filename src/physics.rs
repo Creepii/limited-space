@@ -1,4 +1,26 @@
-use bevy::prelude::Vec2;
+use bevy::prelude::{Component, Vec2};
+
+#[derive(Component)]
+pub enum CollisionBox {
+    Circle {
+        radius: f32,
+    },
+    AABB {
+        width_radius: f32,
+        height_radius: f32,
+    },
+}
+impl CollisionBox {
+    pub fn to_collider(&self, x: f32, y: f32) -> Collider {
+        match self {
+            CollisionBox::Circle { radius } => Collider::Circle(Vec2::new(x, y), *radius),
+            CollisionBox::AABB {
+                width_radius,
+                height_radius,
+            } => Collider::AABB(Vec2::new(x, y), Vec2::new(*width_radius, *height_radius)),
+        }
+    }
+}
 
 pub enum Collider {
     Circle(Vec2, f32),
@@ -16,7 +38,6 @@ impl Collider {
             }
             (aabb, circle @ Collider::Circle(_, _)) => Collider::collide_circle_aabb(circle, aabb),
             (circle, aabb) => Collider::collide_circle_aabb(circle, aabb),
-            _ => todo!(),
         }
     }
 
