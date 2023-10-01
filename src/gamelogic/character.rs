@@ -94,19 +94,19 @@ fn trigger_flag(
     characters: Query<(&CollisionBox, &Transform, &Character), Without<GoalFlag>>,
 ) {
     for (goal_box, goal_trafo, mut flag) in &mut flags {
-        let mut any_collided = false;
+        let mut all_collided = true;
         for (character_box, character_trafo, _character) in &characters {
             let is_colliding = Collider::collide(
                 &character_box
                     .to_collider(character_trafo.translation.x, character_trafo.translation.y),
                 &goal_box.to_collider(goal_trafo.translation.x, goal_trafo.translation.y),
             );
-            if is_colliding {
-                any_collided = true;
+            if !is_colliding {
+                all_collided = false;
             }
         }
         let prev_reached = flag.reached;
-        if !prev_reached && any_collided {
+        if !prev_reached && all_collided {
             flag.reached = true;
             commands.spawn(AudioBundle {
                 source: asset_server.load("sounds/win.ogg"),
