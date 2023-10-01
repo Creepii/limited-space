@@ -36,7 +36,8 @@ fn update_indicators(
 ) {
     if let Ok(discovered) = discovered.get_single() {
         let font: Handle<Font> = asset_server.load("fonts/NotoSans-Regular.ttf");
-        let background = asset_server.load("characters/portrait_background.png");
+        let background = asset_server.load("menu/portrait_background.png");
+        let selected = asset_server.load("menu/portrait_selected.png");
         let number_style = TextStyle {
             font: font.clone(),
             font_size: 16.0,
@@ -51,6 +52,7 @@ fn update_indicators(
                 make_character_component(
                     p,
                     &background,
+                    &selected,
                     &character.face_texture(&asset_server),
                     &number_style,
                     character.clone(),
@@ -64,6 +66,7 @@ fn update_indicators(
 fn make_character_component(
     p: &mut ChildBuilder,
     background: &Handle<Image>,
+    selected: &Handle<Image>,
     character_image: &Handle<Image>,
     number_style: &TextStyle,
     character: Character,
@@ -77,27 +80,41 @@ fn make_character_component(
         ..default()
     },))
         .with_children(|p| {
-            p.spawn((
-                ImageBundle {
-                    image: UiImage {
-                        texture: background.clone(),
-                        ..default()
-                    },
-                    background_color: BackgroundColor(character.color()),
-                    style: Style {
-                        height: Val::Percent(100.0),
-                        aspect_ratio: Some(1.0),
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        flex_direction: FlexDirection::Column,
-                        display: Display::Flex,
-                        ..default()
-                    },
+            p.spawn(ImageBundle {
+                image: UiImage {
+                    texture: background.clone(),
                     ..default()
                 },
-                CharacterIndicator { character },
-            ))
+                background_color: BackgroundColor(character.color()),
+                style: Style {
+                    height: Val::Percent(100.0),
+                    aspect_ratio: Some(1.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    display: Display::Flex,
+                    ..default()
+                },
+                ..default()
+            })
             .with_children(|p| {
+                p.spawn((
+                    ImageBundle {
+                        image: UiImage {
+                            texture: selected.clone(),
+                            ..default()
+                        },
+                        style: Style {
+                            position_type: PositionType::Absolute,
+                            width: Val::Percent(100.0),
+                            height: Val::Percent(100.0),
+                            ..default()
+                        },
+                        visibility: Visibility::Hidden,
+                        ..default()
+                    },
+                    CharacterIndicator { character },
+                ));
                 p.spawn(ImageBundle {
                     image: UiImage {
                         texture: character_image.clone(),
@@ -140,18 +157,15 @@ fn create_overlay(mut commands: Commands) {
 
 fn update_character_indicators(
     character: Query<&CurrentCharacter>,
-    mut query: Query<(&mut BackgroundColor, &CharacterIndicator)>,
+    mut query: Query<(&mut Visibility, &CharacterIndicator)>,
 ) {
     let character = character.single().current.clone();
     for (mut color, indicator) in &mut query {
         let is_selected = character == indicator.character;
-        let character_color = indicator.character.color();
-        let [h, s, l, a] = character_color.as_hsla_f32();
-        let new_color = if is_selected {
-            Color::hsla(h, s, l + 0.1, a)
+        *color = if is_selected {
+            Visibility::Visible
         } else {
-            character_color
+            Visibility::Hidden
         };
-        *color = BackgroundColor(new_color);
     }
 }
