@@ -33,15 +33,9 @@ impl Collider {
 
     fn collide_aabb_aabb(first: &Collider, second: &Collider) -> bool {
         match (first, second) {
-            (Collider::AABB(f_center, f_bounds), Collider::AABB(s_center, s_bounds)) => {
-                let f_min_x = f_center.x - f_bounds.x.abs() / 2.0;
-                let f_min_y = f_center.y - f_bounds.y.abs() / 2.0;
-                let f_max_x = f_center.x + f_bounds.x.abs() / 2.0;
-                let f_max_y = f_center.y + f_bounds.y.abs() / 2.0;
-                let s_min_x = s_center.x - s_bounds.x.abs() / 2.0;
-                let s_min_y = s_center.y - s_bounds.y.abs() / 2.0;
-                let s_max_x = s_center.x + s_bounds.x.abs() / 2.0;
-                let s_max_y = s_center.y + s_bounds.y.abs() / 2.0;
+            (Collider::AABB(f_center, f_size), Collider::AABB(s_center, s_size)) => {
+                let [f_min_x, f_max_x, f_min_y, f_max_y] = aabb_bounds(f_center, f_size);
+                let [s_min_x, s_max_x, s_min_y, s_max_y] = aabb_bounds(s_center, s_size);
                 f_min_x <= s_max_x && s_min_x <= f_max_x && f_min_y <= s_max_y && s_min_y <= f_max_y
             }
             _ => panic!("Passed invalid colliders to aabb-aabb-collision"),
@@ -50,41 +44,19 @@ impl Collider {
 
     fn collide_circle_aabb(circle: &Collider, aabb: &Collider) -> bool {
         match (circle, aabb) {
-            (
-                Collider::Circle(circle_center, circle_radius),
-                Collider::AABB(aabb_center, aabb_bounds),
-            ) => {
-                let aabb_min_x = aabb_center.x - aabb_bounds.x.abs() / 2.0;
-                let aabb_min_y = aabb_center.y - aabb_bounds.y.abs() / 2.0;
-                let aabb_max_x = aabb_center.x + aabb_bounds.x.abs() / 2.0;
-                let aabb_max_y = aabb_center.y + aabb_bounds.y.abs() / 2.0;
-                let line_segments = [
-                    (
-                        Vec2::new(aabb_min_x, aabb_min_y),
-                        Vec2::new(aabb_min_x, aabb_max_y),
-                    ),
-                    (
-                        Vec2::new(aabb_min_x, aabb_min_y),
-                        Vec2::new(aabb_max_x, aabb_min_y),
-                    ),
-                    (
-                        Vec2::new(aabb_max_x, aabb_max_y),
-                        Vec2::new(aabb_min_x, aabb_max_y),
-                    ),
-                    (
-                        Vec2::new(aabb_max_x, aabb_max_y),
-                        Vec2::new(aabb_max_x, aabb_min_y),
-                    ),
-                ];
-
+            (Collider::Circle(circle_center, _), Collider::AABB(aabb_center, aabb_size)) => {
+                let [aabb_min_x, aabb_max_x, aabb_min_y, aabb_max_y] =
+                    aabb_bounds(aabb_center, aabb_size);
                 let circle_in_aabb = aabb_min_x <= circle_center.x
                     && circle_center.x <= aabb_max_x
                     && aabb_min_y <= circle_center.y
                     && circle_center.y <= aabb_max_y;
                 circle_in_aabb
-                    || line_segments.iter().any(|line_segment| {
-                        Collider::intersect_circle_line_segment(circle, line_segment)
-                    })
+                    || aabb_line_segments(aabb_center, aabb_size)
+                        .iter()
+                        .any(|line_segment| {
+                            Collider::intersect_circle_line_segment(circle, line_segment)
+                        })
             }
             _ => panic!("Passed invalid colliders to circle-aabb-collision"),
         }
@@ -119,6 +91,24 @@ impl Collider {
             _ => panic!("Passed invalid collider to circle-line segment-intersection"),
         }
     }
+}
+
+fn aabb_bounds(center: &Vec2, size: &Vec2) -> [f32; 4] {
+    let min_x = center.x - size.x.abs() / 2.0;
+    let min_y = center.y - size.y.abs() / 2.0;
+    let max_x = center.x + size.x.abs() / 2.0;
+    let max_y = center.y + size.y.abs() / 2.0;
+    [min_x, max_x, min_y, max_y]
+}
+
+fn aabb_line_segments(center: &Vec2, size: &Vec2) -> [(Vec2, Vec2); 4] {
+    let [min_x, max_x, min_y, max_y] = aabb_bounds(center, size);
+    [
+        (Vec2::new(min_x, min_y), Vec2::new(min_x, max_y)),
+        (Vec2::new(min_x, min_y), Vec2::new(max_x, min_y)),
+        (Vec2::new(max_x, max_y), Vec2::new(min_x, max_y)),
+        (Vec2::new(max_x, max_y), Vec2::new(max_x, min_y)),
+    ]
 }
 
 fn between(to_check: f32, bound0: f32, bound1: f32) -> bool {
