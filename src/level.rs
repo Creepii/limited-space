@@ -79,6 +79,11 @@ fn make_character_component(
                     texture: character_image.clone(),
                     ..default()
                 },
+                style: Style {
+                    width: Val::Percent(40.0),
+                    height: Val::Percent(40.0),
+                    ..default()
+                },
                 ..default()
             });
         });
