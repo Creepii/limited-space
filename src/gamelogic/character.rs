@@ -166,7 +166,7 @@ fn on_character_collision(
                 speed: 1.0,
                 paused: false,
             },
-            source: asset_server.load("sounds/coin.ogg"),
+            source: asset_server.load("sounds/new_character.ogg"),
         });
         discovered.discovered.push(new_character.clone());
     }
