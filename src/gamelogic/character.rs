@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::GameStates;
+use crate::{
+    physics::{Collider, CollisionBox},
+    GameStates,
+};
 
 #[derive(Component, PartialEq, Eq, Debug, Clone)]
 pub enum Character {
@@ -54,6 +57,10 @@ impl Plugin for CharacterPlugin {
         app.add_systems(
             Update,
             collect_characters.run_if(in_state(GameStates::Level)),
+        );
+        app.add_systems(
+            Update,
+            character_collisions.run_if(in_state(GameStates::Level)),
         );
         app.add_systems(Update, player_movement.run_if(in_state(GameStates::Level)));
     }
@@ -111,6 +118,7 @@ fn summon_characters(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Character::Turtle,
+        CollisionBox::Circle { radius: 18.0 },
     ));
     commands.spawn((
         SpriteBundle {
@@ -119,7 +127,50 @@ fn summon_characters(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Character::Rabbit,
+        CollisionBox::Circle { radius: 18.0 },
     ));
+}
+
+fn on_character_collision(
+    first: &Character,
+    second: &Character,
+    mut discovered: Mut<DiscoveredCharacters>,
+    current: &CurrentCharacter,
+) {
+    if first == &current.current {
+        if !discovered.discovered.contains(second) {
+            info!("New character: {:?}", second);
+            discovered.discovered.push(second.clone());
+        }
+    } else if second == &current.current {
+        if !discovered.discovered.contains(first) {
+            info!("New character: {:?}", first);
+            discovered.discovered.push(first.clone());
+        }
+    }
+}
+
+fn character_collisions(
+    query: Query<(&Character, &CollisionBox, &Transform)>,
+    mut player_query: Query<(&mut DiscoveredCharacters, &CurrentCharacter)>,
+) {
+    let collidables: Vec<(&Character, &CollisionBox, &Transform)> = query.iter().collect();
+    for i in 0..collidables.len() {
+        for j in i + 1..collidables.len() {
+            let collider_a = {
+                let (_, collision_box, transform) = collidables[i];
+                collision_box.to_collider(transform.translation.x, transform.translation.y)
+            };
+            let collider_b = {
+                let (_, collision_box, transform) = collidables[j];
+                collision_box.to_collider(transform.translation.x, transform.translation.y)
+            };
+            if Collider::collide(&collider_a, &collider_b) {
+                let (discovered, current) = player_query.single_mut();
+                on_character_collision(collidables[i].0, collidables[j].0, discovered, current);
+            }
+        }
+    }
 }
 
 const PLAYER_SPEED: f32 = 256.0;
