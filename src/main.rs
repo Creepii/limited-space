@@ -1,7 +1,8 @@
 use assets::{TileSetAssetLoader, TilesAssetLoader};
 use bevy::{prelude::*, window::WindowResolution};
 use gamelogic::{
-    level_mgr::{LevelManager, ManagedLevel},
+    character::DiscoveredCharacters,
+    level_mgr::{LevelManager, LoadedLevel, ManagedLevel},
     GameLogicPlugins,
 };
 use loading::{LoadingPlugin, TilemapAtlas};
@@ -81,7 +82,6 @@ fn load_current_level(
 ) {
     let manager = query.single();
     manager.load_level(
-        manager.current,
         asset_server,
         tilemap_atlas,
         atlasses,
@@ -89,4 +89,14 @@ fn load_current_level(
         tilesets,
         commands,
     );
+}
+
+fn unload_current_level(
+    commands: Commands,
+    query: Query<&LevelManager>,
+    discovered: Query<&mut DiscoveredCharacters>,
+    level_entities: Query<(Entity, &LoadedLevel)>,
+) {
+    let manager = query.single();
+    manager.unload_level(commands, discovered, level_entities.iter());
 }

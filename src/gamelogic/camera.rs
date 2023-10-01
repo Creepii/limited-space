@@ -91,19 +91,21 @@ fn camera_movement(
             (center.x, center.y, scale)
         }
         CameraMode::CurrentCharacter => {
-            let character_transform = param_set
+            if let Some(character_transform) = param_set
                 .p2()
                 .iter()
                 .filter(|c| c.0 == &character)
                 .map(|c| c.1)
                 .next()
-                .unwrap()
-                .clone();
-            (
-                character_transform.translation.x,
-                character_transform.translation.y,
-                CAMERA_SCALE,
-            )
+            {
+                (
+                    character_transform.translation.x,
+                    character_transform.translation.y,
+                    CAMERA_SCALE,
+                )
+            } else {
+                (0.0, 0.0, CAMERA_SCALE)
+            }
         }
     };
     for mut camera_transform in param_set.p0().iter_mut() {

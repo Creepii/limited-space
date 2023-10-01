@@ -6,7 +6,7 @@ use self::{
 };
 
 mod camera;
-mod character;
+pub mod character;
 mod indicator;
 mod level;
 pub mod level_mgr;

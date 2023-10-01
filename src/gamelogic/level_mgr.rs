@@ -4,15 +4,16 @@ use bevy::prelude::*;
 
 use crate::{
     loading::TilemapAtlas,
+    physics::CollisionBox,
     tilemap::{TileSet, Tilemap, TilemapAtlasResolver, Tiles},
 };
 
 use super::{
     character::{Character, CurrentCharacter, DiscoveredCharacters, PlayerBundle},
-    level::create_push_button,
+    level::{PushButton, PushButtonBundle},
 };
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(u8)]
 pub enum ManagedLevel {
     Level1,
@@ -74,7 +75,13 @@ pub struct LevelManager {
     pub current: ManagedLevel,
 }
 
+#[derive(Component)]
+pub struct LoadedLevel {
+    pub level: ManagedLevel,
+}
+
 struct LevelLoadContext<'ctx, 'world, 'cmd> {
+    level: ManagedLevel,
     data: &'ctx LevelData,
     asset_server: &'ctx Res<'world, AssetServer>,
     tilemap_atlas: &'ctx Res<'world, TilemapAtlas>,
@@ -87,7 +94,6 @@ struct LevelLoadContext<'ctx, 'world, 'cmd> {
 impl LevelManager {
     pub fn load_level<'world, 'cmd>(
         &self,
-        level: ManagedLevel,
         asset_server: Res<'world, AssetServer>,
         tilemap_atlas: Res<'world, TilemapAtlas>,
         atlasses: Res<'world, Assets<TextureAtlas>>,
@@ -95,8 +101,9 @@ impl LevelManager {
         tilesets: Res<'world, Assets<TileSet>>,
         mut commands: Commands<'world, 'cmd>,
     ) {
-        let data = level.get_data();
+        let data = self.current.get_data();
         let mut ctx = LevelLoadContext {
+            level: self.current.clone(),
             data,
             asset_server: &asset_server,
             tilemap_atlas: &tilemap_atlas,
@@ -109,18 +116,64 @@ impl LevelManager {
         ctx.create_buttons();
         ctx.create_characters();
     }
+
+    pub fn unload_level<'q, I>(
+        &self,
+        mut commands: Commands,
+        mut discovered: Query<&mut DiscoveredCharacters>,
+        iter: I,
+    ) where
+        I: Iterator<Item = (Entity, &'q LoadedLevel)>,
+    {
+        if let Ok(mut discovered) = discovered.get_single_mut() {
+            discovered.discovered = Vec::new();
+        }
+        for (entity, loaded) in iter {
+            if loaded.level == self.current {
+                commands.entity(entity).despawn_recursive();
+            }
+        }
+    }
 }
 
 impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
     fn create_buttons(&mut self) {
-        for button in &self.data.buttons {
-            create_push_button(
-                self.asset_server,
-                self.commands,
-                Transform::from_xyz(button.position.x, button.position.y, 5.0),
-                button.index,
-                button.color,
-            );
+        for button_data in &self.data.buttons {
+            let button_base = self.asset_server.load("tilemap/push_button_base.png");
+            let button = self.asset_server.load("tilemap/push_button.png");
+            self.commands
+                .spawn((
+                    PushButtonBundle {
+                        button: PushButton {
+                            pressed: false,
+                            index: button_data.index,
+                        },
+                        collision: CollisionBox::Circle { radius: 4.0 },
+                        sprite: SpriteBundle {
+                            transform: Transform::from_xyz(
+                                button_data.position.x,
+                                button_data.position.y,
+                                5.0,
+                            ),
+                            sprite: Sprite {
+                                color: button_data.color,
+                                ..default()
+                            },
+                            texture: button,
+                            ..default()
+                        },
+                    },
+                    LoadedLevel {
+                        level: self.level.clone(),
+                    },
+                ))
+                .with_children(|p| {
+                    p.spawn(SpriteBundle {
+                        texture: button_base,
+                        transform: Transform::from_xyz(0.0, 0.0, -1.0),
+                        ..default()
+                    });
+                });
         }
     }
 
@@ -141,17 +194,22 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
         for x in 0..tilemap.width() {
             for y in 0..tilemap.height() {
                 if let Some(tile) = tilemap_resolver.get(x, y) {
-                    self.commands.spawn(SpriteSheetBundle {
-                        texture_atlas: tilemap_resolver.atlas(),
-                        sprite: TextureAtlasSprite::new(tile),
-                        transform: Transform::from_translation(Vec3 {
-                            x: (x as f32) * 32.0,
-                            y: (y as f32) * 32.0,
-                            z: 0.0,
-                        })
-                        .with_scale(Vec3::new(1.02, 1.02, 1.0)),
-                        ..default()
-                    });
+                    self.commands.spawn((
+                        SpriteSheetBundle {
+                            texture_atlas: tilemap_resolver.atlas(),
+                            sprite: TextureAtlasSprite::new(tile),
+                            transform: Transform::from_translation(Vec3 {
+                                x: (x as f32) * 32.0,
+                                y: (y as f32) * 32.0,
+                                z: 0.0,
+                            })
+                            .with_scale(Vec3::new(1.02, 1.02, 1.0)),
+                            ..default()
+                        },
+                        LoadedLevel {
+                            level: self.level.clone(),
+                        },
+                    ));
                 }
             }
         }
@@ -175,15 +233,18 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 },
                 character.character.clone(),
                 character.character.collision_box(),
+                LoadedLevel {
+                    level: self.level.clone(),
+                },
             ));
         }
-        self.commands.spawn(PlayerBundle {
+        self.commands.spawn((PlayerBundle {
             current: CurrentCharacter {
                 current: self.data.starting_character.clone(),
             },
             discovered: DiscoveredCharacters {
                 discovered: discovered,
             },
-        });
+        },));
     }
 }

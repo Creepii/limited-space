@@ -13,10 +13,10 @@ pub struct PushButton {
 
 #[derive(Bundle)]
 pub struct PushButtonBundle {
-    button: PushButton,
-    collision: CollisionBox,
+    pub button: PushButton,
+    pub collision: CollisionBox,
     #[bundle()]
-    sprite: SpriteBundle,
+    pub sprite: SpriteBundle,
 }
 
 fn play_button_sound(
@@ -37,38 +37,6 @@ fn play_button_sound(
             });
         }
     }
-}
-
-pub fn create_push_button(
-    asset_server: &Res<AssetServer>,
-    commands: &mut Commands,
-    transform: Transform,
-    index: usize,
-    color: Color,
-) {
-    let button_base = asset_server.load("tilemap/push_button_base.png");
-    let button = asset_server.load("tilemap/push_button.png");
-    commands
-        .spawn(PushButtonBundle {
-            button: PushButton {
-                pressed: false,
-                index,
-            },
-            collision: CollisionBox::Circle { radius: 4.0 },
-            sprite: SpriteBundle {
-                transform,
-                sprite: Sprite { color, ..default() },
-                texture: button,
-                ..default()
-            },
-        })
-        .with_children(|p| {
-            p.spawn(SpriteBundle {
-                texture: button_base,
-                transform: Transform::from_xyz(0.0, 0.0, -1.0),
-                ..default()
-            });
-        });
 }
 
 pub struct LevelPlugin;
