@@ -31,7 +31,7 @@ fn main() {
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(Msaa::Off)
         .add_systems(Startup, setup_base)
-        .add_systems(OnEnter(GameState::InGame), load_current_level)
+        .add_systems(Update, level_loading.run_if(in_state(GameState::InGame)))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -71,32 +71,26 @@ fn setup_base(mut commands: Commands) {
     });
 }
 
-fn load_current_level(
+fn level_loading(
+    discovered: Query<&mut DiscoveredCharacters>,
+    level_entities: Query<(Entity, &LoadedLevel)>,
     asset_server: Res<AssetServer>,
     tilemap_atlas: Res<TilemapAtlas>,
     atlasses: Res<Assets<TextureAtlas>>,
     tiles: Res<Assets<Tiles>>,
     tilesets: Res<Assets<TileSet>>,
-    commands: Commands,
-    query: Query<&LevelManager>,
+    mut commands: Commands,
+    query: Query<&LevelManager, Changed<LevelManager>>,
 ) {
-    let manager = query.single();
-    manager.load_level(
-        asset_server,
-        tilemap_atlas,
-        atlasses,
-        tiles,
-        tilesets,
-        commands,
-    );
-}
-
-fn unload_current_level(
-    commands: Commands,
-    query: Query<&LevelManager>,
-    discovered: Query<&mut DiscoveredCharacters>,
-    level_entities: Query<(Entity, &LoadedLevel)>,
-) {
-    let manager = query.single();
-    manager.unload_level(commands, discovered, level_entities.iter());
+    if let Ok(manager) = query.get_single() {
+        manager.unload_level(&mut commands, discovered, level_entities.iter());
+        manager.load_level(
+            asset_server,
+            tilemap_atlas,
+            atlasses,
+            tiles,
+            tilesets,
+            commands,
+        );
+    }
 }

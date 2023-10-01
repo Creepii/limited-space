@@ -10,7 +10,7 @@ use crate::{
 
 use super::{
     character::{Character, CurrentCharacter, DiscoveredCharacters, PlayerBundle},
-    level::{PushButton, PushButtonBundle},
+    level::{GoalFlag, GoalFlagBundle, PushButton, PushButtonBundle},
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -25,6 +25,8 @@ impl ManagedLevel {
     fn get_data(&self) -> &'static LevelData {
         &LEVEL_DATAS.get_or_init(|| {
             vec![LevelData {
+                next_level: ManagedLevel::Level1,
+                flag_position: Vec2::new(128.0, 32.0),
                 tileset: "levels/level1/tileset.json".to_string(),
                 tilemap_layers: vec!["levels/level1/tilemap_ground.csv".to_string()],
                 starting_character: Character::Turtle,
@@ -63,8 +65,10 @@ struct ButtonData {
 }
 
 struct LevelData {
+    next_level: ManagedLevel,
     tileset: String,
     tilemap_layers: Vec<String>,
+    flag_position: Vec2,
     starting_character: Character,
     characters: Vec<CharacterData>,
     buttons: Vec<ButtonData>,
@@ -112,6 +116,7 @@ impl LevelManager {
             tile_set_atlas: &tilesets,
             commands: &mut commands,
         };
+        ctx.create_flag();
         ctx.create_tilemap();
         ctx.create_buttons();
         ctx.create_characters();
@@ -119,7 +124,7 @@ impl LevelManager {
 
     pub fn unload_level<'q, I>(
         &self,
-        mut commands: Commands,
+        commands: &mut Commands,
         mut discovered: Query<&mut DiscoveredCharacters>,
         iter: I,
     ) where
@@ -137,6 +142,31 @@ impl LevelManager {
 }
 
 impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
+    fn create_flag(&mut self) {
+        let flag_texture = self.asset_server.load("tilemap/flag.png");
+        self.commands.spawn((
+            GoalFlagBundle {
+                goal_flag: GoalFlag {
+                    next_level: self.data.next_level.clone(),
+                    reached: false,
+                },
+                collision: CollisionBox::Circle { radius: 4.0 },
+                sprite: SpriteBundle {
+                    transform: Transform::from_xyz(
+                        self.data.flag_position.x,
+                        self.data.flag_position.y,
+                        5.0,
+                    ),
+                    texture: flag_texture,
+                    ..default()
+                },
+            },
+            LoadedLevel {
+                level: self.level.clone(),
+            },
+        ));
+    }
+
     fn create_buttons(&mut self) {
         for button_data in &self.data.buttons {
             let button_base = self.asset_server.load("tilemap/push_button_base.png");

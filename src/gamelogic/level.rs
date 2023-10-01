@@ -5,10 +5,26 @@ use bevy::{
 
 use crate::{physics::CollisionBox, GameState};
 
+use super::level_mgr::ManagedLevel;
+
 #[derive(Component, Debug)]
 pub struct PushButton {
     pub pressed: bool,
     pub index: usize,
+}
+
+#[derive(Component)]
+pub struct GoalFlag {
+    pub next_level: ManagedLevel,
+    pub reached: bool,
+}
+
+#[derive(Bundle)]
+pub struct GoalFlagBundle {
+    pub goal_flag: GoalFlag,
+    pub collision: CollisionBox,
+    #[bundle()]
+    pub sprite: SpriteBundle,
 }
 
 #[derive(Bundle)]

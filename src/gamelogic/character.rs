@@ -8,7 +8,30 @@ use crate::{
     GameState,
 };
 
-use super::level::PushButton;
+use super::{
+    level::{GoalFlag, PushButton},
+    level_mgr::LevelManager,
+};
+
+pub struct CharacterPlugin;
+impl Plugin for CharacterPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            switch_characters.run_if(in_state(GameState::InGame)),
+        );
+        app.add_systems(
+            Update,
+            trigger_meet_character.run_if(in_state(GameState::InGame)),
+        );
+        app.add_systems(
+            Update,
+            trigger_push_buttons.run_if(in_state(GameState::InGame)),
+        );
+        app.add_systems(Update, trigger_flag.run_if(in_state(GameState::InGame)));
+        app.add_systems(Update, player_movement.run_if(in_state(GameState::InGame)));
+    }
+}
 
 #[derive(Component, PartialEq, Eq, Debug, Clone)]
 pub enum Character {
@@ -63,22 +86,39 @@ pub struct PlayerBundle {
     pub discovered: DiscoveredCharacters,
 }
 
-pub struct CharacterPlugin;
-impl Plugin for CharacterPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            switch_characters.run_if(in_state(GameState::InGame)),
-        );
-        app.add_systems(
-            Update,
-            trigger_meet_character.run_if(in_state(GameState::InGame)),
-        );
-        app.add_systems(
-            Update,
-            trigger_push_buttons.run_if(in_state(GameState::InGame)),
-        );
-        app.add_systems(Update, player_movement.run_if(in_state(GameState::InGame)));
+fn trigger_flag(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    mut flags: Query<(&CollisionBox, &Transform, &mut GoalFlag)>,
+    mut manager: Query<&mut LevelManager>,
+    characters: Query<(&CollisionBox, &Transform, &Character), Without<GoalFlag>>,
+) {
+    for (goal_box, goal_trafo, mut flag) in &mut flags {
+        let mut any_collided = false;
+        for (character_box, character_trafo, _character) in &characters {
+            let is_colliding = Collider::collide(
+                &character_box
+                    .to_collider(character_trafo.translation.x, character_trafo.translation.y),
+                &goal_box.to_collider(goal_trafo.translation.x, goal_trafo.translation.y),
+            );
+            if is_colliding {
+                any_collided = true;
+            }
+        }
+        let prev_reached = flag.reached;
+        if !prev_reached && any_collided {
+            flag.reached = true;
+            commands.spawn(AudioBundle {
+                source: asset_server.load("sounds/win.ogg"),
+                settings: PlaybackSettings {
+                    mode: PlaybackMode::Despawn,
+                    volume: Volume::new_absolute(1.0),
+                    speed: 1.0,
+                    paused: false,
+                },
+            });
+            manager.single_mut().current = flag.next_level;
+        }
     }
 }
 
