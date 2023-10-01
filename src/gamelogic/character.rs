@@ -141,16 +141,19 @@ fn switch_characters(
             for (discovered, mut current) in &mut query {
                 let selected_character = discovered.discovered.get(number);
                 if let Some(selected) = selected_character {
-                    commands.spawn(AudioBundle {
-                        source: asset_server.load("sounds/switch_character.ogg"),
-                        settings: PlaybackSettings {
-                            mode: PlaybackMode::Despawn,
-                            volume: Volume::new_absolute(1.0),
-                            speed: 1.0,
-                            paused: false,
-                        },
-                    });
-                    current.current = selected.clone();
+                    let prev_character = &current.current;
+                    if prev_character != selected {
+                        commands.spawn(AudioBundle {
+                            source: asset_server.load("sounds/switch_character.ogg"),
+                            settings: PlaybackSettings {
+                                mode: PlaybackMode::Despawn,
+                                volume: Volume::new_absolute(1.0),
+                                speed: 1.0,
+                                paused: false,
+                            },
+                        });
+                        current.current = selected.clone();
+                    }
                 }
             }
         }
