@@ -6,6 +6,7 @@ use crate::GameStates;
 pub enum Character {
     Turtle,
     Rabbit,
+    Crocodile,
 }
 
 impl Character {
@@ -13,42 +14,62 @@ impl Character {
         match self {
             Character::Turtle => Color::BEIGE,
             Character::Rabbit => Color::AQUAMARINE,
+            Character::Crocodile => Color::BLUE,
+        }
+    }
+
+    pub fn face_texture(&self, asset_server: &Res<AssetServer>) -> Handle<Image> {
+        match self {
+            Character::Turtle => asset_server.load("characters/turtle_face.png"),
+            Character::Rabbit => asset_server.load("characters/rabbit_face.png"),
+            Character::Crocodile => asset_server.load("characters/crocodile_face.png"),
         }
     }
 }
 
-#[derive(Resource)]
+#[derive(Component)]
 pub struct CurrentCharacter {
     pub current: Character,
 }
 
-#[derive(Resource)]
-struct DiscoveredCharacters {
-    discovered: Vec<Character>,
+#[derive(Component)]
+pub struct DiscoveredCharacters {
+    pub discovered: Vec<Character>,
+}
+
+#[derive(Bundle)]
+pub struct PlayerBundle {
+    current: CurrentCharacter,
+    discovered: DiscoveredCharacters,
 }
 
 pub struct CharacterPlugin;
 impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(CurrentCharacter {
-            current: Character::Rabbit,
-        });
-        app.insert_resource(DiscoveredCharacters {
-            discovered: vec![Character::Turtle, Character::Rabbit],
-        });
         app.add_systems(OnEnter(GameStates::Level), summon_characters);
         app.add_systems(
             Update,
             switch_characters.run_if(in_state(GameStates::Level)),
         );
+        app.add_systems(
+            Update,
+            collect_characters.run_if(in_state(GameStates::Level)),
+        );
         app.add_systems(Update, player_movement.run_if(in_state(GameStates::Level)));
+    }
+}
+
+fn collect_characters(keys: Res<Input<KeyCode>>, mut query: Query<&mut DiscoveredCharacters>) {
+    if keys.just_pressed(KeyCode::Z) {
+        for mut discovered in &mut query {
+            discovered.discovered.push(Character::Crocodile);
+        }
     }
 }
 
 fn switch_characters(
     keys: Res<Input<KeyCode>>,
-    discovered: Res<DiscoveredCharacters>,
-    mut character: ResMut<CurrentCharacter>,
+    mut query: Query<(&DiscoveredCharacters, &mut CurrentCharacter)>,
 ) {
     // switch characters
     let number_keys = [
@@ -65,15 +86,25 @@ fn switch_characters(
     ];
     for (number, key) in number_keys.into_iter().skip(1).enumerate() {
         if keys.just_pressed(key) {
-            let selected_character = discovered.discovered.get(number);
-            if let Some(selected) = selected_character {
-                character.current = selected.clone();
+            for (discovered, mut current) in &mut query {
+                let selected_character = discovered.discovered.get(number);
+                if let Some(selected) = selected_character {
+                    current.current = selected.clone();
+                }
             }
         }
     }
 }
 
 fn summon_characters(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn(PlayerBundle {
+        current: CurrentCharacter {
+            current: Character::Turtle,
+        },
+        discovered: DiscoveredCharacters {
+            discovered: vec![Character::Turtle],
+        },
+    });
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("characters/turtle.png"),
@@ -95,12 +126,13 @@ const PLAYER_SPEED: f32 = 256.0;
 
 fn player_movement(
     time: Res<Time>,
-    current: Res<CurrentCharacter>,
     keys: Res<Input<KeyCode>>,
+    player_query: Query<&CurrentCharacter>,
     mut query: Query<(&Character, &mut Transform)>,
 ) {
+    let current = player_query.single().current.clone();
     for (character, mut transform) in &mut query {
-        if &current.current == character {
+        if &current == character {
             let direction = Vec2::new(
                 if keys.pressed(KeyCode::A) {
                     -1.0

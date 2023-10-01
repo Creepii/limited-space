@@ -9,6 +9,7 @@ mod assets;
 mod gamelogic;
 mod loading;
 mod menu;
+mod physics;
 mod tilemap;
 mod util;
 
