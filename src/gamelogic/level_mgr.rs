@@ -1,11 +1,14 @@
 use std::sync::OnceLock;
 
-use bevy::{prelude::*, render::render_resource::encase::rts_array::Length};
+use bevy::{
+    prelude::*,
+    render::texture::DEFAULT_IMAGE_HANDLE,
+};
 
 use crate::{
     loading::TilemapAtlas,
-    physics::CollisionBox,
-    tilemap::{TileSet, Tilemap, TilemapAtlasResolver, Tiles, self},
+    physics::{CollisionBox, Solid},
+    tilemap::{TileSet, Tilemap, TilemapAtlasResolver, Tiles},
 };
 
 use super::{
@@ -33,7 +36,7 @@ impl ManagedLevel {
                     tilemap_layers: vec![
                         "levels/level1/tilemap_ground.csv".to_string(),
                         "levels/level1/tilemap_walls.csv".to_string(),
-                        "levels/level1/tilemap_deco.csv".to_string()
+                        "levels/level1/tilemap_deco.csv".to_string(),
                     ],
                     starting_character: Character::Turtle,
                     characters: vec![
@@ -237,9 +240,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
     fn create_tilemap(&mut self) {
         let tile_set_asset: Handle<TileSet> = self.asset_server.load(&self.data.tileset);
         for (layer_index, tilemap_layer) in self.data.tilemap_layers.iter().enumerate() {
-            let tiles_asset: Handle<Tiles> = self
-                .asset_server
-                .load(tilemap_layer);
+            let tiles_asset: Handle<Tiles> = self.asset_server.load(tilemap_layer);
             let tilemap = Tilemap::new(
                 self.tile_set_atlas.get(&tile_set_asset).unwrap(),
                 self.tiles_atlas.get(&tiles_asset).unwrap(),
@@ -253,6 +254,42 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
             );
             spawn_tilemap(&tilemap_resolver, layer_index, &self.level, self.commands);
         }
+
+        // REMOVE THIS TESTING ONLY
+        self.commands.spawn((
+            CollisionBox::AABB {
+                width_radius: 188.0,
+                height_radius: 80.0,
+            },
+            Solid,
+            SpriteBundle {
+                texture: DEFAULT_IMAGE_HANDLE.typed(),
+                transform: Transform::from_xyz(0.0, -50.0, 4.0)
+                    .with_scale(Vec3::new(188.0, 80.0, 0.0)),
+                sprite: Sprite {
+                    color: Color::RED,
+                    ..default()
+                },
+                ..default()
+            },
+        ));
+        self.commands.spawn((
+            CollisionBox::AABB {
+                width_radius: 74.0,
+                height_radius: 80.0,
+            },
+            Solid,
+            SpriteBundle {
+                texture: DEFAULT_IMAGE_HANDLE.typed(),
+                transform: Transform::from_xyz(147.0, -50.0, 4.0)
+                    .with_scale(Vec3::new(74.0, 80.0, 0.0)),
+                sprite: Sprite {
+                    color: Color::BLUE,
+                    ..default()
+                },
+                ..default()
+            },
+        ));
     }
 
     fn create_characters(&mut self) {

@@ -1,6 +1,9 @@
 use bevy::prelude::{Component, Vec2};
 
 #[derive(Component)]
+pub struct Solid;
+
+#[derive(Component)]
 pub enum CollisionBox {
     Circle {
         radius: f32,
@@ -28,73 +31,114 @@ pub enum Collider {
 }
 
 impl Collider {
-    pub fn collide(first: &Collider, second: &Collider) -> bool {
-        match (first, second) {
-            (first @ Collider::Circle(_, _), second @ Collider::Circle(_, _)) => {
-                Collider::collide_circle_circle(first, second)
-            }
-            (first @ Collider::AABB(_, _), second @ Collider::AABB(_, _)) => {
-                Collider::collide_aabb_aabb(first, second)
-            }
-            (aabb, circle @ Collider::Circle(_, _)) => Collider::collide_circle_aabb(circle, aabb),
-            (circle, aabb) => Collider::collide_circle_aabb(circle, aabb),
+    pub fn does_collide(&self, other: &Collider) -> bool {
+        self.collide(other).is_some()
+    }
+
+    pub fn collide(&self, other: &Collider) -> Option<Vec2> {
+        match (self, other) {
+            (Collider::Circle(_, _), Collider::Circle(_, _)) => self.collide_circle_circle(other),
+            (Collider::AABB(_, _), Collider::AABB(_, _)) => self.collide_aabb_aabb(other),
+            (_, Collider::Circle(_, _)) => todo!(), //self.collide_circle_aabb(other),
+            (_, _) => self.collide_circle_aabb(other),
         }
     }
 
-    fn collide_circle_circle(first: &Collider, second: &Collider) -> bool {
-        match (first, second) {
-            (Collider::Circle(f_center, f_radius), Collider::Circle(s_center, s_radius)) => {
-                let distance = f_center.distance(*s_center);
-                let collide_distance = f_radius.abs() + s_radius.abs();
-                distance <= collide_distance
+    fn collide_circle_circle(&self, other: &Collider) -> Option<Vec2> {
+        match (self, other) {
+            (
+                Collider::Circle(self_center, self_radius),
+                Collider::Circle(other_center, other_radius),
+            ) => {
+                let distance = self_center.distance(*other_center);
+                let collide_distance = self_radius.abs() + other_radius.abs();
+                if distance <= collide_distance {
+                    Some(
+                        (*other_center - *self_center)
+                            * ((self_radius.abs() + other_radius.abs() - distance) / 2.0),
+                    )
+                } else {
+                    None
+                }
             }
             _ => panic!("Passed invalid colliders to circle-circle-collision"),
         }
     }
 
-    fn collide_aabb_aabb(first: &Collider, second: &Collider) -> bool {
-        match (first, second) {
-            (Collider::AABB(f_center, f_size), Collider::AABB(s_center, s_size)) => {
-                let [f_min_x, f_max_x, f_min_y, f_max_y] = aabb_bounds(f_center, f_size);
-                let [s_min_x, s_max_x, s_min_y, s_max_y] = aabb_bounds(s_center, s_size);
-                f_min_x <= s_max_x && s_min_x <= f_max_x && f_min_y <= s_max_y && s_min_y <= f_max_y
+    fn collide_aabb_aabb(&self, other: &Collider) -> Option<Vec2> {
+        match (self, other) {
+            (Collider::AABB(self_center, self_size), Collider::AABB(other_center, other_size)) => {
+                let [f_min_x, f_max_x, f_min_y, f_max_y] = aabb_bounds(self_center, self_size);
+                let [s_min_x, s_max_x, s_min_y, s_max_y] = aabb_bounds(other_center, other_size);
+                if f_min_x <= s_max_x
+                    && s_min_x <= f_max_x
+                    && f_min_y <= s_max_y
+                    && s_min_y <= f_max_y
+                {
+                    todo!()
+                } else {
+                    None
+                }
             }
             _ => panic!("Passed invalid colliders to aabb-aabb-collision"),
         }
     }
 
-    fn collide_circle_aabb(circle: &Collider, aabb: &Collider) -> bool {
-        match (circle, aabb) {
-            (Collider::Circle(circle_center, _), Collider::AABB(aabb_center, aabb_size)) => {
+    fn collide_circle_aabb(&self, other: &Collider) -> Option<Vec2> {
+        match (self, other) {
+            (
+                Collider::Circle(self_center, self_radius),
+                Collider::AABB(other_center, other_size),
+            ) => {
                 let [aabb_min_x, aabb_max_x, aabb_min_y, aabb_max_y] =
-                    aabb_bounds(aabb_center, aabb_size);
-                let circle_in_aabb = aabb_min_x <= circle_center.x
-                    && circle_center.x <= aabb_max_x
-                    && aabb_min_y <= circle_center.y
-                    && circle_center.y <= aabb_max_y;
-                circle_in_aabb
-                    || aabb_line_segments(aabb_center, aabb_size)
-                        .iter()
-                        .any(|line_segment| {
-                            Collider::intersect_circle_line_segment(circle, line_segment)
-                        })
+                    aabb_bounds(other_center, other_size);
+                let circle_in_aabb = aabb_min_x <= self_center.x
+                    && self_center.x <= aabb_max_x
+                    && aabb_min_y <= self_center.y
+                    && self_center.y <= aabb_max_y;
+                if circle_in_aabb {
+                    let penetration_x = Vec2::new(other_center.x - self_center.x, 0.0);
+                    let penetration_x = penetration_x.normalize()
+                        * (other_size.x / 2.0 - penetration_x.length() + self_radius);
+                    let penetration_y = Vec2::new(0.0, other_center.y - self_center.y);
+                    let penetration_y = penetration_y.normalize()
+                        * (other_size.y / 2.0 - penetration_y.length() + self_radius);
+                    return Some(
+                        if penetration_x.length_squared() < penetration_y.length_squared() {
+                            penetration_x
+                        } else {
+                            penetration_y
+                        },
+                    );
+                }
+                aabb_line_segments(other_center, other_size)
+                    .iter()
+                    .map(|line_segment| self.intersect_circle_line_segment(line_segment))
+                    .filter(|intersection| intersection.is_some())
+                    .map(|intersection| intersection.unwrap())
+                    .max_by(|first, second| first.length().partial_cmp(&second.length()).unwrap())
             }
             _ => panic!("Passed invalid colliders to circle-aabb-collision"),
         }
     }
 
-    fn intersect_circle_line_segment(circle: &Collider, line_segment: &(Vec2, Vec2)) -> bool {
-        match circle {
+    fn intersect_circle_line_segment(&self, line_segment: &(Vec2, Vec2)) -> Option<Vec2> {
+        match self {
             Collider::Circle(center, radius) => {
                 if line_segment.0.x == line_segment.1.x {
                     // vertical
-                    if between(center.y, line_segment.0.y, line_segment.1.y) {
-                        (center.x - line_segment.0.x).abs() <= *radius
+                    let nearest_point = if between(center.y, line_segment.0.y, line_segment.1.y) {
+                        Vec2::new(line_segment.0.x, center.y)
+                    } else if center.distance(line_segment.0) < center.distance(line_segment.1) {
+                        line_segment.0
                     } else {
-                        center
-                            .distance(line_segment.0)
-                            .min(center.distance(line_segment.1))
-                            <= *radius
+                        line_segment.1
+                    };
+                    if center.distance(nearest_point) <= *radius {
+                        let penetration = nearest_point - *center;
+                        Some(penetration.normalize() * (radius - penetration.length()))
+                    } else {
+                        None
                     }
                 } else if line_segment.0.y == line_segment.1.y {
                     // horizontal is just vertical with x and y flipped
@@ -105,6 +149,7 @@ impl Collider {
                             Vec2::new(line_segment.1.y, line_segment.1.x),
                         ),
                     )
+                    .map(|point| Vec2::new(point.y, point.x))
                 } else {
                     panic!("Only axis-aligned line segment intersections are currently supported")
                 }

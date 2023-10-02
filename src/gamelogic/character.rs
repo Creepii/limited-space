@@ -4,7 +4,7 @@ use bevy::{
 };
 
 use crate::{
-    physics::{Collider, CollisionBox},
+    physics::{CollisionBox, Solid},
     GameState,
 };
 
@@ -96,9 +96,9 @@ fn trigger_flag(
     for (goal_box, goal_trafo, mut flag) in &mut flags {
         let mut all_collided = true;
         for (character_box, character_trafo, _character) in &characters {
-            let is_colliding = Collider::collide(
-                &character_box
-                    .to_collider(character_trafo.translation.x, character_trafo.translation.y),
+            let character_collider = &character_box
+                .to_collider(character_trafo.translation.x, character_trafo.translation.y);
+            let is_colliding = character_collider.does_collide(
                 &goal_box.to_collider(goal_trafo.translation.x, goal_trafo.translation.y),
             );
             if !is_colliding {
@@ -137,9 +137,9 @@ fn trigger_push_buttons(
     for (button_box, button_trafo, mut button, mut button_texture) in &mut buttons {
         let mut any_collided = false;
         for (character_box, character_trafo, _character) in &characters {
-            let is_colliding = Collider::collide(
-                &character_box
-                    .to_collider(character_trafo.translation.x, character_trafo.translation.y),
+            let character_collider = &character_box
+                .to_collider(character_trafo.translation.x, character_trafo.translation.y);
+            let is_colliding = character_collider.does_collide(
                 &button_box.to_collider(button_trafo.translation.x, button_trafo.translation.y),
             );
             if is_colliding {
@@ -256,7 +256,7 @@ fn trigger_meet_character(
                 let (_, collision_box, transform) = collidables[j];
                 collision_box.to_collider(transform.translation.x, transform.translation.y)
             };
-            if Collider::collide(&collider_a, &collider_b) {
+            if collider_a.does_collide(&collider_b) {
                 let (discovered, current) = player_query.single_mut();
                 on_meet_character(
                     collidables[i].0,
@@ -271,17 +271,18 @@ fn trigger_meet_character(
     }
 }
 
-const PLAYER_SPEED: f32 = 256.0;
+const PLAYER_SPEED: f32 = 128.0;
 
 fn player_movement(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
     player_query: Query<&CurrentCharacter>,
-    mut query: Query<(&Character, &mut Transform)>,
+    solid_collider_query: Query<(&CollisionBox, &Transform), With<Solid>>,
+    mut query: Query<(&Character, &CollisionBox, &mut Transform), Without<Solid>>,
 ) {
     if let Ok(current) = player_query.get_single() {
-        for (character, mut transform) in &mut query {
-            if &current.current == character {
+        for (character, collision_box, mut transform) in &mut query {
+            if current.current == *character {
                 let direction = Vec2::new(
                     if keys.pressed(KeyCode::A) {
                         -1.0
@@ -300,14 +301,47 @@ fn player_movement(
                 );
                 let movement =
                     direction.normalize_or_zero() * (PLAYER_SPEED * time.delta_seconds());
+                // high speed leads to glitching because movement code isn't in fixed update
                 transform.translation.x += movement.x;
                 transform.translation.y += movement.y;
+                let character_collider =
+                    collision_box.to_collider(transform.translation.x, transform.translation.y);
+                let mut total_penetration = Vec2::ZERO;
+                solid_collider_query
+                    .iter()
+                    .for_each(|(solid_collision_box, solid_transform)| {
+                        let solid_collider = solid_collision_box.to_collider(
+                            solid_transform.translation.x,
+                            solid_transform.translation.y,
+                        );
+
+                        match character_collider.collide(&solid_collider) {
+                            Some(penetration) => {
+                                if penetration.is_finite() {
+                                    total_penetration += penetration;
+                                }
+                            }
+                            None => (),
+                        }
+                    });
+                transform.translation -= total_penetration.extend(0.0);
                 let view_rotation = Vec2::Y.angle_between(movement);
                 if !view_rotation.is_nan() {
                     transform.rotation = transform.rotation.lerp(
                         Quat::from_euler(EulerRot::XYZ, 0.0, 0.0, view_rotation),
                         0.2,
                     );
+                    let movement =
+                        direction.normalize_or_zero() * (PLAYER_SPEED * time.delta_seconds());
+                    transform.translation.x += movement.x;
+                    transform.translation.y += movement.y;
+                    let view_rotation = Vec2::Y.angle_between(movement);
+                    if !view_rotation.is_nan() {
+                        transform.rotation = transform.rotation.lerp(
+                            Quat::from_euler(EulerRot::XYZ, 0.0, 0.0, view_rotation),
+                            0.2,
+                        );
+                    }
                 }
             }
         }
