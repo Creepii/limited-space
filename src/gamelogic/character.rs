@@ -61,6 +61,7 @@ pub enum Character {
     Turtle,
     Rabbit,
     Crocodile,
+    Lizard,
 }
 
 #[derive(Component)]
@@ -76,6 +77,7 @@ impl Character {
         match self {
             Character::Turtle => Color::hsl(73.0, 0.7, 0.75),
             Character::Rabbit => Color::hsl(340.0, 0.55, 0.85),
+            Character::Lizard => Color::hsl(47.0, 0.9, 0.7),
             Character::Crocodile => Color::BLUE,
         }
     }
@@ -85,6 +87,7 @@ impl Character {
             Character::Turtle => asset_server.load("characters/turtle_face.png"),
             Character::Rabbit => asset_server.load("characters/rabbit_face.png"),
             Character::Crocodile => asset_server.load("characters/crocodile_face.png"),
+            Character::Lizard => asset_server.load("characters/lizard_face.png"),
         }
     }
 
@@ -97,11 +100,13 @@ impl Character {
             Character::Turtle => asset_server.load("characters/turtle_walk.png"),
             Character::Rabbit => asset_server.load("characters/rabbit_walk.png"),
             Character::Crocodile => asset_server.load("characters/crocodile_walk.png"),
+            Character::Lizard => asset_server.load("characters/lizard_walk.png"),
         };
         let tile_size = match self {
             Character::Turtle => Vec2::new(32.0, 32.0),
             Character::Rabbit => Vec2::new(32.0, 32.0),
             Character::Crocodile => Vec2::new(32.0, 64.0),
+            Character::Lizard => Vec2::new(32.0, 32.0),
         };
         let texture_atlas =
             TextureAtlas::from_grid(texture_handle, tile_size, 1, self.frames(), None, None);
@@ -109,7 +114,12 @@ impl Character {
     }
 
     pub fn collision_box(&self) -> CollisionBox {
-        CollisionBox::Circle { radius: 18.0 }
+        match self {
+            Character::Turtle => CollisionBox::Circle { radius: 18.0 },
+            Character::Rabbit => CollisionBox::Circle { radius: 18.0 },
+            Character::Crocodile => CollisionBox::Circle { radius: 18.0 },
+            Character::Lizard => CollisionBox::Circle { radius: 8.0 },
+        }
     }
 
     pub fn frames(&self) -> usize {
@@ -117,6 +127,7 @@ impl Character {
             Character::Turtle => 4,
             Character::Rabbit => 4,
             Character::Crocodile => 4,
+            Character::Lizard => 4,
         }
     }
 
@@ -125,6 +136,7 @@ impl Character {
             Character::Turtle => 48.0,
             Character::Rabbit => 16.0 + 96.0 * (time.elapsed_seconds() * 6.0).sin().abs(),
             Character::Crocodile => 64.0,
+            Character::Lizard => 96.0,
         }
     }
 }
