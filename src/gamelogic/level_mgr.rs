@@ -25,102 +25,118 @@ pub enum ManagedLevel {
     Level2,
 }
 
+const COLLIDER_DEBUG: bool = true;
+
 static LEVEL_DATAS: OnceLock<Vec<LevelData>> = OnceLock::new();
 
 const TILE_SIZE: f32 = 32.0;
 
 impl ManagedLevel {
-    fn get_data(&self) -> &'static LevelData {
+    pub fn get_data(&self) -> &'static LevelData {
         &LEVEL_DATAS.get_or_init(|| {
             vec![
                 LevelData {
                     next_level: Some(ManagedLevel::Level2),
-                    flag_position: Vec2::new(128.0, 32.0),
-                    tileset: "levels/level1/tileset.json".to_string(),
+                    flag_position: Vec2::new(27.0 * TILE_SIZE, 17.5 * TILE_SIZE),
+                    tileset: "levels/tileset.json".to_string(),
                     tilemap_layers: vec![
                         "levels/level1/tilemap_ground.csv".to_string(),
                         "levels/level1/tilemap_walls.csv".to_string(),
                         "levels/level1/tilemap_deco.csv".to_string(),
                     ],
                     starting_character: Character::Turtle,
-                    characters: vec![
-                        CharacterData {
-                            is_discovered: true,
-                            character: Character::Turtle,
-                            starting_position: Vec2::new(0.0, 0.0),
-                        },
-                        CharacterData {
-                            is_discovered: false,
-                            character: Character::Rabbit,
-                            starting_position: Vec2::new(64.0, 0.0),
-                        },
-                    ],
-                    buttons: vec![ButtonData {
-                        position: Vec2::new(64.0, 64.0),
-                        index: 0,
-                        color: Color::rgb(0.8, 0.2, 0.2),
+                    characters: vec![CharacterData {
+                        is_discovered: true,
+                        character: Character::Turtle,
+                        starting_position: Vec2::new(18.0 * TILE_SIZE, 18.0 * TILE_SIZE),
                     }],
+                    buttons: vec![],
                     map_colliders: vec![
                         SolidColliderData {
+                            whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.0),
                             size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 6.2),
                         },
                         SolidColliderData {
+                            whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 22.2),
                             size: Vec2::new(TILE_SIZE * 14.0, TILE_SIZE * 0.8),
                         },
                         SolidColliderData {
+                            whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 29.2, TILE_SIZE * 16.0),
                             size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 6.2),
                         },
                         SolidColliderData {
+                            whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 16.8, TILE_SIZE * 16.0),
                             size: Vec2::new(TILE_SIZE * 12.4, TILE_SIZE * 0.8),
                         },
                         SolidColliderData {
+                            whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 20.2, TILE_SIZE * 16.8),
                             size: Vec2::new(TILE_SIZE * 2.6, TILE_SIZE * 1.0),
                         },
                         SolidColliderData {
+                            whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 20.2, TILE_SIZE * 17.8),
                             size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 2.0),
                         },
                     ],
-                    bridges: vec![BridgeData {
-                        negated: false,
-                        position: Vec2::new(256.0, 64.0),
-                        index: 0,
-                        color: Color::rgb(0.8, 0.2, 0.2),
-                    }],
+                    bridges: vec![],
                 },
                 LevelData {
                     next_level: None,
-                    flag_position: Vec2::new(256.0, 32.0),
-                    tileset: "levels/level1/tileset.json".to_string(),
-                    tilemap_layers: vec!["levels/level1/tilemap_ground.csv".to_string()],
+                    flag_position: Vec2::new(27.0 * TILE_SIZE, 20.0 * TILE_SIZE),
+                    tileset: "levels/tileset.json".to_string(),
+                    tilemap_layers: vec![
+                        "levels/level2/tilemap_ground.csv".to_string(),
+                        "levels/level2/tilemap_walls.csv".to_string(),
+                        "levels/level2/tilemap_deco.csv".to_string(),
+                    ],
                     starting_character: Character::Turtle,
                     characters: vec![
                         CharacterData {
                             is_discovered: true,
                             character: Character::Turtle,
-                            starting_position: Vec2::new(0.0, 0.0),
+                            starting_position: Vec2::new(20.0 * TILE_SIZE, 17.0 * TILE_SIZE),
                         },
                         CharacterData {
-                            is_discovered: true,
-                            character: Character::Crocodile,
-                            starting_position: Vec2::new(64.0, 0.0),
+                            is_discovered: false,
+                            character: Character::Rabbit,
+                            starting_position: Vec2::new(18.0 * TILE_SIZE, 20.0 * TILE_SIZE),
                         },
                     ],
-                    buttons: vec![ButtonData {
-                        position: Vec2::new(64.0, 64.0),
+                    buttons: vec![
+                        ButtonData {
+                            position: Vec2::new(22.0 * TILE_SIZE, 21.0 * TILE_SIZE),
+                            index: 0,
+                            color: Color::rgb(0.8, 0.2, 0.2),
+                        },
+                        ButtonData {
+                            position: Vec2::new(27.0 * TILE_SIZE, 18.0 * TILE_SIZE),
+                            index: 0,
+                            color: Color::rgb(0.8, 0.2, 0.2),
+                        },
+                    ],
+                    map_colliders: vec![SolidColliderData {
+                        whitelisted: None,
+                        corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.0),
+                        size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 6.2),
+                    }],
+                    bridges: vec![BridgeData {
+                        position: Vec2::new(24.0 * TILE_SIZE, 18.0 * TILE_SIZE),
+                        negated: false,
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
-                    map_colliders: vec![],
-                    bridges: vec![],
                 },
             ]
         })[(*self as u8) as usize]
+    }
+
+    pub(crate) fn levels() -> impl Iterator<Item = ManagedLevel> {
+        [ManagedLevel::Level1, ManagedLevel::Level2].into_iter()
     }
 }
 
@@ -139,6 +155,7 @@ struct ButtonData {
 struct SolidColliderData {
     corner_position: Vec2,
     size: Vec2,
+    whitelisted: Option<Character>,
 }
 
 struct BridgeData {
@@ -148,10 +165,10 @@ struct BridgeData {
     position: Vec2,
 }
 
-struct LevelData {
+pub struct LevelData {
     next_level: Option<ManagedLevel>,
-    tileset: String,
-    tilemap_layers: Vec<String>,
+    pub tileset: String,
+    pub tilemap_layers: Vec<String>,
     flag_position: Vec2,
     starting_character: Character,
     characters: Vec<CharacterData>,
@@ -179,6 +196,7 @@ struct LevelLoadContext<'ctx, 'world, 'cmd> {
     atlasses: &'ctx mut ResMut<'world, Assets<TextureAtlas>>,
     tiles_atlas: &'ctx Res<'world, Assets<Tiles>>,
     tile_set_atlas: &'ctx Res<'world, Assets<TileSet>>,
+    camera: &'ctx mut Transform,
     commands: &'ctx mut Commands<'world, 'cmd>,
 }
 
@@ -190,6 +208,7 @@ impl LevelManager {
         mut atlasses: ResMut<'world, Assets<TextureAtlas>>,
         tiles: Res<'world, Assets<Tiles>>,
         tilesets: Res<'world, Assets<TileSet>>,
+        camera: &mut Transform,
         mut commands: Commands<'world, 'cmd>,
     ) {
         info!("Loading level: {:?}", self.next);
@@ -202,6 +221,7 @@ impl LevelManager {
             atlasses: &mut atlasses,
             tiles_atlas: &tiles,
             tile_set_atlas: &tilesets,
+            camera,
             commands: &mut commands,
         };
         ctx.create_flag();
@@ -238,7 +258,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 sprite: SpriteBundle {
                     transform: Transform::from_xyz(
                         self.data.flag_position.x,
-                        self.data.flag_position.y,
+                        -self.data.flag_position.y,
                         5.0,
                     ),
                     texture: flag_texture,
@@ -268,7 +288,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                             width_radius: 16.0,
                             height_radius: 16.0,
                         },
-                        solid: Solid,
+                        solid: Solid::default(),
                         sprite: SpriteBundle {
                             sprite: Sprite {
                                 color: bridge_data.color,
@@ -276,7 +296,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                             },
                             transform: Transform::from_xyz(
                                 bridge_data.position.x,
-                                bridge_data.position.y,
+                                -bridge_data.position.y,
                                 5.0,
                             ),
                             texture: gate,
@@ -296,7 +316,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                     });
                     p.spawn(SpriteBundle {
                         texture: bridge_right,
-                        transform: Transform::from_xyz(32.0, 0.0, -1.0),
+                        transform: Transform::from_xyz(TILE_SIZE, 0.0, -1.0),
                         visibility: Visibility::Visible,
                         ..default()
                     });
@@ -319,7 +339,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                         sprite: SpriteBundle {
                             transform: Transform::from_xyz(
                                 button_data.position.x,
-                                button_data.position.y,
+                                -button_data.position.y,
                                 5.0,
                             ),
                             sprite: Sprite {
@@ -370,7 +390,9 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                     width_radius: map_collider.size.x,
                     height_radius: map_collider.size.y,
                 },
-                Solid,
+                Solid {
+                    whitelisted: map_collider.whitelisted.clone(),
+                },
                 SpriteBundle {
                     texture: DEFAULT_IMAGE_HANDLE.typed(),
                     transform: Transform::from_xyz(
@@ -384,8 +406,13 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                         0.0,
                     )),
                     sprite: Sprite {
-                        color: Color::RED,
+                        color: Color::rgba(1.0, 0.0, 0.0, 0.5),
                         ..default()
+                    },
+                    visibility: if COLLIDER_DEBUG {
+                        Visibility::Visible
+                    } else {
+                        Visibility::Hidden
                     },
                     ..default()
                 },
@@ -402,6 +429,10 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
             if character.is_discovered {
                 discovered.push(character.character.clone());
             }
+            if character.character == self.data.starting_character {
+                self.camera.translation.x = character.starting_position.x;
+                self.camera.translation.y = -character.starting_position.y;
+            }
             self.commands.spawn((
                 SpriteSheetBundle {
                     texture_atlas: character
@@ -410,7 +441,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                     sprite: TextureAtlasSprite::new(0),
                     transform: Transform::from_xyz(
                         character.starting_position.x,
-                        character.starting_position.y,
+                        -character.starting_position.y,
                         10.0,
                     ),
                     ..default()
@@ -457,8 +488,8 @@ fn spawn_tilemap(
                         texture_atlas: tilemap_resolver.atlas(),
                         sprite: TextureAtlasSprite::new(tile),
                         transform: Transform::from_translation(Vec3 {
-                            x: (x as f32) * 32.0,
-                            y: -(y as f32) * 32.0,
+                            x: (x as f32) * TILE_SIZE,
+                            y: -(y as f32) * TILE_SIZE,
                             z: layer as f32,
                         })
                         .with_scale(Vec3::new(1.02, 1.02, 1.0)),

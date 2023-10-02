@@ -74,8 +74,8 @@ pub struct AnimationTimer(pub Timer);
 impl Character {
     pub fn color(&self) -> Color {
         match self {
-            Character::Turtle => Color::BEIGE,
-            Character::Rabbit => Color::AQUAMARINE,
+            Character::Turtle => Color::hsl(73.0, 0.7, 0.75),
+            Character::Rabbit => Color::hsl(340.0, 0.55, 0.85),
             Character::Crocodile => Color::BLUE,
         }
     }
@@ -96,7 +96,7 @@ impl Character {
         let texture_handle = match self {
             Character::Turtle => asset_server.load("characters/turtle_walk.png"),
             Character::Rabbit => asset_server.load("characters/rabbit_walk.png"),
-            Character::Crocodile => asset_server.load("characters/crocodile.png"),
+            Character::Crocodile => asset_server.load("characters/crocodile_walk.png"),
         };
         let tile_size = match self {
             Character::Turtle => Vec2::new(32.0, 32.0),
@@ -116,14 +116,14 @@ impl Character {
         match self {
             Character::Turtle => 4,
             Character::Rabbit => 4,
-            Character::Crocodile => 1,
+            Character::Crocodile => 4,
         }
     }
 
     fn speed(&self, time: &Res<Time>) -> f32 {
         match self {
-            Character::Turtle => 64.0,
-            Character::Rabbit => 16.0 + 64.0 * (time.elapsed_seconds() * 6.0).sin().abs(),
+            Character::Turtle => 48.0,
+            Character::Rabbit => 16.0 + 96.0 * (time.elapsed_seconds() * 6.0).sin().abs(),
             Character::Crocodile => 64.0,
         }
     }
@@ -343,7 +343,7 @@ fn player_movement(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
     player_query: Query<&CurrentCharacter>,
-    solid_collider_query: Query<(&CollisionBox, &Transform), With<Solid>>,
+    solid_collider_query: Query<(&CollisionBox, &Transform, &Solid)>,
     mut query: Query<(&Character, &CollisionBox, &mut Walking, &mut Transform), Without<Solid>>,
 ) {
     if let Ok(current) = player_query.get_single() {
@@ -380,7 +380,8 @@ fn player_movement(
                 let mut total_penetration = Vec2::ZERO;
                 solid_collider_query
                     .iter()
-                    .for_each(|(solid_collision_box, solid_transform)| {
+                    .filter(|(_, _, solid)| solid.whitelisted != Some(character.clone()))
+                    .for_each(|(solid_collision_box, solid_transform, _)| {
                         let solid_collider = solid_collision_box.to_collider(
                             solid_transform.translation.x,
                             solid_transform.translation.y,

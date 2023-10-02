@@ -1,7 +1,11 @@
 use bevy::prelude::{Component, Vec2};
 
-#[derive(Component)]
-pub struct Solid;
+use crate::gamelogic::character::Character;
+
+#[derive(Component, Default)]
+pub struct Solid {
+    pub whitelisted: Option<Character>,
+}
 
 #[derive(Component)]
 pub enum CollisionBox {

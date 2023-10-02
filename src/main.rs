@@ -41,7 +41,7 @@ fn main() {
                     primary_window: Some(Window {
                         resizable: false,
                         resolution: WindowResolution::new(1024.0, 640.0),
-                        title: String::from("Limited Space"),
+                        title: String::from("Puzzle Pawz"),
                         ..default()
                     }),
                     ..default()
@@ -73,7 +73,7 @@ fn setup_base(mut commands: Commands) {
     ));
     commands.spawn(LevelManager {
         current: None,
-        next: Some(ManagedLevel::Level1),
+        next: Some(ManagedLevel::Level2),
     });
 }
 
@@ -85,8 +85,10 @@ fn level_loading(
     tiles: Res<Assets<Tiles>>,
     tilesets: Res<Assets<TileSet>>,
     mut commands: Commands,
+    mut camera: Query<&mut Transform, With<MainCamera>>,
     mut query: Query<&mut LevelManager, Changed<LevelManager>>,
 ) {
+    let mut camera = camera.single_mut();
     if let Ok(mut manager) = query.get_single_mut() {
         manager.unload_level(&mut commands, level_entities.iter());
         manager.load_level(
@@ -95,6 +97,7 @@ fn level_loading(
             atlasses,
             tiles,
             tilesets,
+            &mut camera,
             commands,
         );
         manager.current = manager.next;
