@@ -28,8 +28,13 @@ pub struct TilemapAtlas {
     pub tilemap: Option<Handle<TextureAtlas>>,
 }
 
+const TILEMAP_ASSETS: &'static str = include_str!("tilemap_assets.txt");
+
 fn start_loading(asset_server: Res<AssetServer>, mut loading_resources: ResMut<LoadingResources>) {
-    let handles = asset_server.load_folder("tilemap").unwrap();
+    let handles: Vec<HandleUntyped> = TILEMAP_ASSETS
+        .split("\n")
+        .map(|p| asset_server.load_untyped(p))
+        .collect();
     loading_resources
         .handles
         .extend(handles.iter().map(|h| h.clone()));
