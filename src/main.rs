@@ -73,7 +73,7 @@ fn setup_base(mut commands: Commands) {
     ));
     commands.spawn(LevelManager {
         current: None,
-        next: Some(ManagedLevel::Level2),
+        next: Some(ManagedLevel::Level3),
     });
 }
 

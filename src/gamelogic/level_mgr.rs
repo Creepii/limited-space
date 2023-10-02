@@ -23,6 +23,7 @@ use super::{
 pub enum ManagedLevel {
     Level1,
     Level2,
+    Level3,
 }
 
 const COLLIDER_DEBUG: bool = true;
@@ -82,11 +83,21 @@ impl ManagedLevel {
                             corner_position: Vec2::new(TILE_SIZE * 20.2, TILE_SIZE * 17.8),
                             size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 2.0),
                         },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 23.1, TILE_SIZE * 21.1),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 25.1, TILE_SIZE * 21.1),
+                            size: Vec2::new(TILE_SIZE * 1.8, TILE_SIZE * 0.8),
+                        },
                     ],
                     bridges: vec![],
                 },
                 LevelData {
-                    next_level: None,
+                    next_level: Some(ManagedLevel::Level3),
                     flag_position: Vec2::new(27.0 * TILE_SIZE, 20.0 * TILE_SIZE),
                     tileset: "levels/tileset.json".to_string(),
                     tilemap_layers: vec![
@@ -119,17 +130,114 @@ impl ManagedLevel {
                             color: Color::rgb(0.8, 0.2, 0.2),
                         },
                     ],
-                    map_colliders: vec![SolidColliderData {
-                        whitelisted: None,
-                        corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.0),
-                        size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 6.2),
-                    }],
+                    map_colliders: vec![
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.8),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 4.4),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 26.1, TILE_SIZE * 21.1),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 18.1, TILE_SIZE * 17.1),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 20.1, TILE_SIZE * 20.9),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 20.1, TILE_SIZE * 20.1),
+                            size: Vec2::new(TILE_SIZE * 1.8, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 21.1, TILE_SIZE * 19.1),
+                            size: Vec2::new(TILE_SIZE * 3.1, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 16.8, TILE_SIZE * 15.8),
+                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 18.8, TILE_SIZE * 14.8),
+                            size: Vec2::new(TILE_SIZE * 3.4, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 22.2, TILE_SIZE * 15.8),
+                            size: Vec2::new(TILE_SIZE * 7.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 24.2, TILE_SIZE * 16.8),
+                            size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 24.2, TILE_SIZE * 19.0),
+                            size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 4.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 16.8, TILE_SIZE * 21.2),
+                            size: Vec2::new(TILE_SIZE * 1.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 17.8, TILE_SIZE * 22.2),
+                            size: Vec2::new(TILE_SIZE * 6.4, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 25.8, TILE_SIZE * 22.2),
+                            size: Vec2::new(TILE_SIZE * 3.4, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 29.2, TILE_SIZE * 21.2),
+                            size: Vec2::new(TILE_SIZE * 1.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 29.2, TILE_SIZE * 16.8),
+                            size: Vec2::new(TILE_SIZE * 1.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 30.2, TILE_SIZE * 17.8),
+                            size: Vec2::new(TILE_SIZE * 1.0, TILE_SIZE * 3.4),
+                        },
+                    ],
                     bridges: vec![BridgeData {
                         position: Vec2::new(24.0 * TILE_SIZE, 18.0 * TILE_SIZE),
                         negated: false,
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
+                },
+                LevelData {
+                    bridges: vec![],
+                    buttons: vec![],
+                    next_level: None,
+                    flag_position: Vec2::new(27.0 * TILE_SIZE, 20.0 * TILE_SIZE),
+                    tileset: "levels/tileset.json".to_string(),
+                    tilemap_layers: vec![],
+                    starting_character: Character::Turtle,
+                    characters: vec![CharacterData {
+                        character: Character::Turtle,
+                        starting_position: Vec2::new(0.0, 0.0),
+                        is_discovered: true,
+                    }],
+                    map_colliders: vec![],
                 },
             ]
         })[(*self as u8) as usize]
