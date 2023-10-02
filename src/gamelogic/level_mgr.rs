@@ -24,6 +24,8 @@ pub enum ManagedLevel {
 
 static LEVEL_DATAS: OnceLock<Vec<LevelData>> = OnceLock::new();
 
+const TILE_SIZE: f32 = 32.0;
+
 impl ManagedLevel {
     fn get_data(&self) -> &'static LevelData {
         &LEVEL_DATAS.get_or_init(|| {
@@ -55,10 +57,32 @@ impl ManagedLevel {
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
-                    map_colliders: vec![SolidColliderData {
-                        corner_position: Vec2::new(0.0, 0.0),
-                        size: Vec2::new(32.0, 32.0),
-                    }],
+                    map_colliders: vec![
+                        SolidColliderData {
+                            corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.0),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 6.2),
+                        },
+                        SolidColliderData {
+                            corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 22.2),
+                            size: Vec2::new(TILE_SIZE * 14.0, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            corner_position: Vec2::new(TILE_SIZE * 29.2, TILE_SIZE * 16.0),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 6.2),
+                        },
+                        SolidColliderData {
+                            corner_position: Vec2::new(TILE_SIZE * 16.8, TILE_SIZE * 16.0),
+                            size: Vec2::new(TILE_SIZE * 12.4, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            corner_position: Vec2::new(TILE_SIZE * 20.2, TILE_SIZE * 16.8),
+                            size: Vec2::new(TILE_SIZE * 2.6, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            corner_position: Vec2::new(TILE_SIZE * 20.2, TILE_SIZE * 17.8),
+                            size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 2.0),
+                        },
+                    ],
                     bridges: vec![BridgeData {
                         negated: false,
                         position: Vec2::new(256.0, 64.0),
@@ -347,8 +371,8 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 SpriteBundle {
                     texture: DEFAULT_IMAGE_HANDLE.typed(),
                     transform: Transform::from_xyz(
-                        map_collider.corner_position.x,
-                        map_collider.corner_position.y,
+                        map_collider.corner_position.x + (map_collider.size.x - TILE_SIZE) / 2.0,
+                        -(map_collider.corner_position.y + (map_collider.size.y - TILE_SIZE) / 2.0),
                         4.0,
                     )
                     .with_scale(Vec3::new(
