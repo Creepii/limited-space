@@ -9,7 +9,10 @@ use crate::{
 };
 
 use super::{
-    character::{Character, CurrentCharacter, DiscoveredCharacters, PlayerBundle},
+    character::{
+        AnimationFrames, AnimationTimer, Character, CurrentCharacter, DiscoveredCharacters,
+        PlayerBundle, Walking,
+    },
     level::{
         GatedBridge, GatedBridgeBundle, GoalFlag, GoalFlagBundle, PushButton, PushButtonBundle,
     },
@@ -173,7 +176,7 @@ struct LevelLoadContext<'ctx, 'world, 'cmd> {
     data: &'ctx LevelData,
     asset_server: &'ctx Res<'world, AssetServer>,
     tilemap_atlas: &'ctx Res<'world, TilemapAtlas>,
-    atlasses: &'ctx Res<'world, Assets<TextureAtlas>>,
+    atlasses: &'ctx mut ResMut<'world, Assets<TextureAtlas>>,
     tiles_atlas: &'ctx Res<'world, Assets<Tiles>>,
     tile_set_atlas: &'ctx Res<'world, Assets<TileSet>>,
     commands: &'ctx mut Commands<'world, 'cmd>,
@@ -184,7 +187,7 @@ impl LevelManager {
         &self,
         asset_server: Res<'world, AssetServer>,
         tilemap_atlas: Res<'world, TilemapAtlas>,
-        atlasses: Res<'world, Assets<TextureAtlas>>,
+        mut atlasses: ResMut<'world, Assets<TextureAtlas>>,
         tiles: Res<'world, Assets<Tiles>>,
         tilesets: Res<'world, Assets<TileSet>>,
         mut commands: Commands<'world, 'cmd>,
@@ -196,7 +199,7 @@ impl LevelManager {
             data,
             asset_server: &asset_server,
             tilemap_atlas: &tilemap_atlas,
-            atlasses: &atlasses,
+            atlasses: &mut atlasses,
             tiles_atlas: &tiles,
             tile_set_atlas: &tilesets,
             commands: &mut commands,
@@ -400,8 +403,11 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 discovered.push(character.character.clone());
             }
             self.commands.spawn((
-                SpriteBundle {
-                    texture: character.character.texture(self.asset_server),
+                SpriteSheetBundle {
+                    texture_atlas: character
+                        .character
+                        .texture(self.asset_server, self.atlasses),
+                    sprite: TextureAtlasSprite::new(0),
                     transform: Transform::from_xyz(
                         character.starting_position.x,
                         character.starting_position.y,
@@ -409,6 +415,11 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                     ),
                     ..default()
                 },
+                Walking { walking: false },
+                AnimationFrames {
+                    frames: character.character.frames(),
+                },
+                AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
                 character.character.clone(),
                 character.character.collision_box(),
                 LoadedLevel {

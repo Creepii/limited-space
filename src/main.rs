@@ -1,5 +1,9 @@
 use assets::{TileSetAssetLoader, TilesAssetLoader};
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::{
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    prelude::*,
+    window::WindowResolution,
+};
 use gamelogic::{
     level_mgr::{LevelManager, LoadedLevel, ManagedLevel},
     GameLogicPlugins,
@@ -47,6 +51,8 @@ fn main() {
         .add_plugins(LoadingPlugin)
         .add_plugins(GameLogicPlugins)
         .add_plugins(MenuPlugin)
+        .add_plugins(LogDiagnosticsPlugin::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_asset::<Tiles>()
         .add_asset::<TileSet>()
         .init_asset_loader::<TilesAssetLoader>()
@@ -75,7 +81,7 @@ fn level_loading(
     level_entities: Query<(Entity, &LoadedLevel)>,
     asset_server: Res<AssetServer>,
     tilemap_atlas: Res<TilemapAtlas>,
-    atlasses: Res<Assets<TextureAtlas>>,
+    atlasses: ResMut<Assets<TextureAtlas>>,
     tiles: Res<Assets<Tiles>>,
     tilesets: Res<Assets<TileSet>>,
     mut commands: Commands,

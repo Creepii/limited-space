@@ -29,7 +29,30 @@ impl Plugin for CharacterPlugin {
             trigger_push_buttons.run_if(in_state(GameState::InGame)),
         );
         app.add_systems(Update, trigger_flag.run_if(in_state(GameState::InGame)));
+        app.add_systems(
+            Update,
+            update_animations.run_if(in_state(GameState::InGame)),
+        );
         app.add_systems(Update, player_movement.run_if(in_state(GameState::InGame)));
+    }
+}
+
+fn update_animations(
+    time: Res<Time>,
+    mut query: Query<(
+        &AnimationFrames,
+        &Walking,
+        &mut AnimationTimer,
+        &mut TextureAtlasSprite,
+    )>,
+) {
+    for (frames, walking, mut timer, mut sprite) in &mut query {
+        timer.tick(time.delta());
+        if timer.just_finished() && walking.walking {
+            let current_index = sprite.index;
+            let next_index = (current_index + 1) % frames.frames;
+            sprite.index = next_index;
+        }
     }
 }
 
@@ -39,6 +62,14 @@ pub enum Character {
     Rabbit,
     Crocodile,
 }
+
+#[derive(Component)]
+pub struct AnimationFrames {
+    pub frames: usize,
+}
+
+#[derive(Component, Deref, DerefMut)]
+pub struct AnimationTimer(pub Timer);
 
 impl Character {
     pub fn color(&self) -> Color {
@@ -57,16 +88,36 @@ impl Character {
         }
     }
 
-    pub fn texture(&self, asset_server: &Res<AssetServer>) -> Handle<Image> {
-        match self {
-            Character::Turtle => asset_server.load("characters/turtle.png"),
+    pub fn texture(
+        &self,
+        asset_server: &Res<AssetServer>,
+        texture_atlasses: &mut ResMut<Assets<TextureAtlas>>,
+    ) -> Handle<TextureAtlas> {
+        let texture_handle = match self {
+            Character::Turtle => asset_server.load("characters/turtle_walk.png"),
             Character::Rabbit => asset_server.load("characters/rabbit.png"),
             Character::Crocodile => asset_server.load("characters/crocodile.png"),
-        }
+        };
+        let tile_size = match self {
+            Character::Turtle => Vec2::new(32.0, 32.0),
+            Character::Rabbit => Vec2::new(32.0, 32.0),
+            Character::Crocodile => Vec2::new(32.0, 64.0),
+        };
+        let texture_atlas =
+            TextureAtlas::from_grid(texture_handle, tile_size, 1, self.frames(), None, None);
+        texture_atlasses.add(texture_atlas)
     }
 
     pub fn collision_box(&self) -> CollisionBox {
         CollisionBox::Circle { radius: 18.0 }
+    }
+
+    pub fn frames(&self) -> usize {
+        match self {
+            Character::Turtle => 4,
+            Character::Rabbit => 1,
+            Character::Crocodile => 1,
+        }
     }
 }
 
@@ -237,6 +288,11 @@ fn on_meet_character(
         });
         discovered.discovered.push(new_character.clone());
     }
+}
+
+#[derive(Component)]
+pub struct Walking {
+    pub walking: bool,
 }
 
 fn trigger_meet_character(

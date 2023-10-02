@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::loading::TilemapAtlas;
 use bevy::{
-    prelude::{AssetServer, Assets, Handle, Image, Res},
+    prelude::{AssetServer, Assets, Handle, Image, Res, ResMut},
     reflect::{TypePath, TypeUuid},
     sprite::TextureAtlas,
 };
@@ -108,7 +108,7 @@ pub struct TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
     pub tilemap: &'tilemap Tilemap<'tileset>,
     asset_server: &'tilemap Res<'res, AssetServer>,
     tilemap_atlas: &'tilemap Res<'res, TilemapAtlas>,
-    atlasses: &'tilemap Res<'res, Assets<TextureAtlas>>,
+    atlasses: &'tilemap ResMut<'res, Assets<TextureAtlas>>,
 }
 
 impl<'res, 'tilemap, 'tileset> TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
@@ -116,7 +116,7 @@ impl<'res, 'tilemap, 'tileset> TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
         tilemap: &'tilemap Tilemap<'tileset>,
         asset_server: &'tilemap Res<'res, AssetServer>,
         tilemap_atlas: &'tilemap Res<'res, TilemapAtlas>,
-        atlasses: &'tilemap Res<'res, Assets<TextureAtlas>>,
+        atlasses: &'tilemap ResMut<'res, Assets<TextureAtlas>>,
     ) -> Self {
         TilemapAtlasResolver {
             tilemap,
