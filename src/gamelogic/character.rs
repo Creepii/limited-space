@@ -95,7 +95,7 @@ impl Character {
     ) -> Handle<TextureAtlas> {
         let texture_handle = match self {
             Character::Turtle => asset_server.load("characters/turtle_walk.png"),
-            Character::Rabbit => asset_server.load("characters/rabbit.png"),
+            Character::Rabbit => asset_server.load("characters/rabbit_walk.png"),
             Character::Crocodile => asset_server.load("characters/crocodile.png"),
         };
         let tile_size = match self {
@@ -115,7 +115,7 @@ impl Character {
     pub fn frames(&self) -> usize {
         match self {
             Character::Turtle => 4,
-            Character::Rabbit => 1,
+            Character::Rabbit => 4,
             Character::Crocodile => 1,
         }
     }
@@ -221,6 +221,7 @@ fn switch_characters(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     keys: Res<Input<KeyCode>>,
+    mut characters: Query<&mut Walking>,
     mut query: Query<(&DiscoveredCharacters, &mut CurrentCharacter)>,
 ) {
     // switch characters
@@ -253,6 +254,9 @@ fn switch_characters(
                             },
                         });
                         current.current = selected.clone();
+                        for mut walking in &mut characters {
+                            walking.walking = false;
+                        }
                     }
                 }
             }
