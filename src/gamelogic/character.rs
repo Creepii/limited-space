@@ -96,7 +96,7 @@ impl Character {
         let texture_handle = match self {
             Character::Turtle => asset_server.load("characters/turtle_walk.png"),
             Character::Rabbit => asset_server.load("characters/rabbit_walk.png"),
-            Character::Crocodile => asset_server.load("characters/crocodile.png"),
+            Character::Crocodile => asset_server.load("characters/crocodile_walk.png"),
         };
         let tile_size = match self {
             Character::Turtle => Vec2::new(32.0, 32.0),
@@ -116,7 +116,7 @@ impl Character {
         match self {
             Character::Turtle => 4,
             Character::Rabbit => 4,
-            Character::Crocodile => 1,
+            Character::Crocodile => 4,
         }
     }
 
