@@ -25,7 +25,7 @@ pub enum ManagedLevel {
     Level2,
 }
 
-const COLLIDER_DEBUG: bool = false;
+const COLLIDER_DEBUG: bool = true;
 
 static LEVEL_DATAS: OnceLock<Vec<LevelData>> = OnceLock::new();
 
@@ -37,7 +37,7 @@ impl ManagedLevel {
             vec![
                 LevelData {
                     next_level: Some(ManagedLevel::Level2),
-                    flag_position: Vec2::new(27.0 * TILE_SIZE, -17.5 * TILE_SIZE),
+                    flag_position: Vec2::new(27.0 * TILE_SIZE, 17.5 * TILE_SIZE),
                     tileset: "levels/tileset.json".to_string(),
                     tilemap_layers: vec![
                         "levels/level1/tilemap_ground.csv".to_string(),
@@ -48,7 +48,7 @@ impl ManagedLevel {
                     characters: vec![CharacterData {
                         is_discovered: true,
                         character: Character::Turtle,
-                        starting_position: Vec2::new(18.0 * TILE_SIZE, -18.0 * TILE_SIZE),
+                        starting_position: Vec2::new(18.0 * TILE_SIZE, 18.0 * TILE_SIZE),
                     }],
                     buttons: vec![],
                     map_colliders: vec![
@@ -83,16 +83,11 @@ impl ManagedLevel {
                             size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 2.0),
                         },
                     ],
-                    bridges: vec![BridgeData {
-                        negated: false,
-                        position: Vec2::new(256.0, 64.0),
-                        index: 0,
-                        color: Color::rgb(0.8, 0.2, 0.2),
-                    }],
+                    bridges: vec![],
                 },
                 LevelData {
                     next_level: None,
-                    flag_position: Vec2::new(27.0 * TILE_SIZE, -20.0 * TILE_SIZE),
+                    flag_position: Vec2::new(27.0 * TILE_SIZE, 20.0 * TILE_SIZE),
                     tileset: "levels/tileset.json".to_string(),
                     tilemap_layers: vec![
                         "levels/level2/tilemap_ground.csv".to_string(),
@@ -104,29 +99,33 @@ impl ManagedLevel {
                         CharacterData {
                             is_discovered: true,
                             character: Character::Turtle,
-                            starting_position: Vec2::new(20.0 * TILE_SIZE, -17.0 * TILE_SIZE),
+                            starting_position: Vec2::new(20.0 * TILE_SIZE, 17.0 * TILE_SIZE),
                         },
                         CharacterData {
                             is_discovered: false,
                             character: Character::Rabbit,
-                            starting_position: Vec2::new(18.0 * TILE_SIZE, -20.0 * TILE_SIZE),
+                            starting_position: Vec2::new(18.0 * TILE_SIZE, 20.0 * TILE_SIZE),
                         },
                     ],
                     buttons: vec![
                         ButtonData {
-                            position: Vec2::new(22.0 * TILE_SIZE, -21.0 * TILE_SIZE),
+                            position: Vec2::new(22.0 * TILE_SIZE, 21.0 * TILE_SIZE),
                             index: 0,
                             color: Color::rgb(0.8, 0.2, 0.2),
                         },
                         ButtonData {
-                            position: Vec2::new(27.0 * TILE_SIZE, -18.0 * TILE_SIZE),
+                            position: Vec2::new(27.0 * TILE_SIZE, 18.0 * TILE_SIZE),
                             index: 0,
                             color: Color::rgb(0.8, 0.2, 0.2),
                         },
                     ],
-                    map_colliders: vec![],
+                    map_colliders: vec![SolidColliderData {
+                        whitelisted: None,
+                        corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.0),
+                        size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 6.2),
+                    }],
                     bridges: vec![BridgeData {
-                        position: Vec2::new(24.0 * TILE_SIZE, -18.0 * TILE_SIZE),
+                        position: Vec2::new(24.0 * TILE_SIZE, 18.0 * TILE_SIZE),
                         negated: false,
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
@@ -259,7 +258,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 sprite: SpriteBundle {
                     transform: Transform::from_xyz(
                         self.data.flag_position.x,
-                        self.data.flag_position.y,
+                        -self.data.flag_position.y,
                         5.0,
                     ),
                     texture: flag_texture,
@@ -297,7 +296,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                             },
                             transform: Transform::from_xyz(
                                 bridge_data.position.x,
-                                bridge_data.position.y,
+                                -bridge_data.position.y,
                                 5.0,
                             ),
                             texture: gate,
@@ -340,7 +339,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                         sprite: SpriteBundle {
                             transform: Transform::from_xyz(
                                 button_data.position.x,
-                                button_data.position.y,
+                                -button_data.position.y,
                                 5.0,
                             ),
                             sprite: Sprite {
@@ -432,7 +431,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
             }
             if character.character == self.data.starting_character {
                 self.camera.translation.x = character.starting_position.x;
-                self.camera.translation.y = character.starting_position.y;
+                self.camera.translation.y = -character.starting_position.y;
             }
             self.commands.spawn((
                 SpriteSheetBundle {
@@ -442,7 +441,7 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                     sprite: TextureAtlasSprite::new(0),
                     transform: Transform::from_xyz(
                         character.starting_position.x,
-                        character.starting_position.y,
+                        -character.starting_position.y,
                         10.0,
                     ),
                     ..default()
