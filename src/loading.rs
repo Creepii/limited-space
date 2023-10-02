@@ -1,6 +1,6 @@
 use bevy::{asset::HandleId, prelude::*};
 
-use crate::GameState;
+use crate::{gamelogic::level_mgr::ManagedLevel, GameState};
 
 pub struct LoadingPlugin;
 
@@ -37,18 +37,17 @@ fn start_loading(asset_server: Res<AssetServer>, mut loading_resources: ResMut<L
         .texture_atlas_handles
         .extend(handles.iter().map(|h| h.clone()));
 
-    loading_resources
-        .handles
-        .push(asset_server.load_untyped("levels/level1/tilemap_ground.csv"));
-    loading_resources
-        .handles
-        .push(asset_server.load_untyped("levels/level1/tilemap_deco.csv"));
-    loading_resources
-        .handles
-        .push(asset_server.load_untyped("levels/level1/tilemap_walls.csv"));
-    loading_resources
-        .handles
-        .push(asset_server.load_untyped("levels/level1/tileset.json"));
+    for level in ManagedLevel::levels() {
+        let data = level.get_data();
+        data.tilemap_layers.iter().for_each(|layer| {
+            loading_resources
+                .handles
+                .push(asset_server.load_untyped(layer));
+        });
+        loading_resources
+            .handles
+            .push(asset_server.load_untyped(&data.tileset));
+    }
 }
 
 fn check_loaded(

@@ -32,13 +32,13 @@ static LEVEL_DATAS: OnceLock<Vec<LevelData>> = OnceLock::new();
 const TILE_SIZE: f32 = 32.0;
 
 impl ManagedLevel {
-    fn get_data(&self) -> &'static LevelData {
+    pub fn get_data(&self) -> &'static LevelData {
         &LEVEL_DATAS.get_or_init(|| {
             vec![
                 LevelData {
                     next_level: Some(ManagedLevel::Level2),
                     flag_position: Vec2::new(27.0 * 32.0, -17.5 * 32.0),
-                    tileset: "levels/level1/tileset.json".to_string(),
+                    tileset: "levels/tileset.json".to_string(),
                     tilemap_layers: vec![
                         "levels/level1/tilemap_ground.csv".to_string(),
                         "levels/level1/tilemap_walls.csv".to_string(),
@@ -86,32 +86,52 @@ impl ManagedLevel {
                 },
                 LevelData {
                     next_level: None,
-                    flag_position: Vec2::new(256.0, 32.0),
-                    tileset: "levels/level1/tileset.json".to_string(),
-                    tilemap_layers: vec!["levels/level1/tilemap_ground.csv".to_string()],
+                    flag_position: Vec2::new(27.0 * 32.0, -20.0 * 32.0),
+                    tileset: "levels/tileset.json".to_string(),
+                    tilemap_layers: vec![
+                        "levels/level2/tilemap_ground.csv".to_string(),
+                        "levels/level2/tilemap_walls.csv".to_string(),
+                        "levels/level2/tilemap_deco.csv".to_string(),
+                    ],
                     starting_character: Character::Turtle,
                     characters: vec![
                         CharacterData {
                             is_discovered: true,
                             character: Character::Turtle,
-                            starting_position: Vec2::new(0.0, 0.0),
+                            starting_position: Vec2::new(20.0 * 32.0, -17.0 * 32.0),
                         },
                         CharacterData {
-                            is_discovered: true,
-                            character: Character::Crocodile,
-                            starting_position: Vec2::new(64.0, 0.0),
+                            is_discovered: false,
+                            character: Character::Rabbit,
+                            starting_position: Vec2::new(18.0 * 32.0, -20.0 * 32.0),
                         },
                     ],
-                    buttons: vec![ButtonData {
-                        position: Vec2::new(64.0, 64.0),
+                    buttons: vec![
+                        ButtonData {
+                            position: Vec2::new(22.0 * 32.0, -21.0 * 32.0),
+                            index: 0,
+                            color: Color::rgb(0.8, 0.2, 0.2),
+                        },
+                        ButtonData {
+                            position: Vec2::new(27.0 * 32.0, -18.0 * 32.0),
+                            index: 0,
+                            color: Color::rgb(0.8, 0.2, 0.2),
+                        },
+                    ],
+                    map_colliders: vec![],
+                    bridges: vec![BridgeData {
+                        position: Vec2::new(24.0 * 32.0, -18.0 * 32.0),
+                        negated: false,
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
-                    map_colliders: vec![],
-                    bridges: vec![],
                 },
             ]
         })[(*self as u8) as usize]
+    }
+
+    pub(crate) fn levels() -> impl Iterator<Item = ManagedLevel> {
+        [ManagedLevel::Level1, ManagedLevel::Level2].into_iter()
     }
 }
 
@@ -139,10 +159,10 @@ struct BridgeData {
     position: Vec2,
 }
 
-struct LevelData {
+pub struct LevelData {
     next_level: Option<ManagedLevel>,
-    tileset: String,
-    tilemap_layers: Vec<String>,
+    pub tileset: String,
+    pub tilemap_layers: Vec<String>,
     flag_position: Vec2,
     starting_character: Character,
     characters: Vec<CharacterData>,

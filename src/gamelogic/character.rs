@@ -122,8 +122,8 @@ impl Character {
 
     fn speed(&self, time: &Res<Time>) -> f32 {
         match self {
-            Character::Turtle => 64.0,
-            Character::Rabbit => 16.0 + 64.0 * (time.elapsed_seconds() * 6.0).sin().abs(),
+            Character::Turtle => 48.0,
+            Character::Rabbit => 16.0 + 96.0 * (time.elapsed_seconds() * 6.0).sin().abs(),
             Character::Crocodile => 64.0,
         }
     }
