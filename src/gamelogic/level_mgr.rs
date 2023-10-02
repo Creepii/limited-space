@@ -25,6 +25,8 @@ pub enum ManagedLevel {
     Level2,
 }
 
+const COLLIDER_DEBUG: bool = false;
+
 static LEVEL_DATAS: OnceLock<Vec<LevelData>> = OnceLock::new();
 
 const TILE_SIZE: f32 = 32.0;
@@ -376,8 +378,13 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                         0.0,
                     )),
                     sprite: Sprite {
-                        color: Color::RED,
+                        color: Color::rgba(1.0, 0.0, 0.0, 0.5),
                         ..default()
+                    },
+                    visibility: if COLLIDER_DEBUG {
+                        Visibility::Visible
+                    } else {
+                        Visibility::Hidden
                     },
                     ..default()
                 },
