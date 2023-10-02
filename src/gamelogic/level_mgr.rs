@@ -119,11 +119,68 @@ impl ManagedLevel {
                             color: Color::rgb(0.8, 0.2, 0.2),
                         },
                     ],
-                    map_colliders: vec![SolidColliderData {
-                        whitelisted: None,
-                        corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.0),
-                        size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 6.2),
-                    }],
+                    map_colliders: vec![
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.8),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 4.4),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 16.8, TILE_SIZE * 15.8),
+                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 18.8, TILE_SIZE * 14.8),
+                            size: Vec2::new(TILE_SIZE * 3.4, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 22.2, TILE_SIZE * 15.8),
+                            size: Vec2::new(TILE_SIZE * 7.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 24.2, TILE_SIZE * 16.8),
+                            size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 24.2, TILE_SIZE * 19.0),
+                            size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 4.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 16.8, TILE_SIZE * 21.2),
+                            size: Vec2::new(TILE_SIZE * 1.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 17.8, TILE_SIZE * 22.2),
+                            size: Vec2::new(TILE_SIZE * 6.4, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 25.8, TILE_SIZE * 22.2),
+                            size: Vec2::new(TILE_SIZE * 3.4, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 29.2, TILE_SIZE * 21.2),
+                            size: Vec2::new(TILE_SIZE * 1.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 29.2, TILE_SIZE * 16.8),
+                            size: Vec2::new(TILE_SIZE * 1.0, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: None,
+                            corner_position: Vec2::new(TILE_SIZE * 30.2, TILE_SIZE * 17.8),
+                            size: Vec2::new(TILE_SIZE * 1.0, TILE_SIZE * 3.4),
+                        },
+                    ],
                     bridges: vec![BridgeData {
                         position: Vec2::new(24.0 * TILE_SIZE, 18.0 * TILE_SIZE),
                         negated: false,
