@@ -74,8 +74,8 @@ pub struct AnimationTimer(pub Timer);
 impl Character {
     pub fn color(&self) -> Color {
         match self {
-            Character::Turtle => Color::BEIGE,
-            Character::Rabbit => Color::AQUAMARINE,
+            Character::Turtle => Color::hsl(73.0, 0.7, 0.75),
+            Character::Rabbit => Color::hsl(340.0, 0.55, 0.85),
             Character::Crocodile => Color::BLUE,
         }
     }
