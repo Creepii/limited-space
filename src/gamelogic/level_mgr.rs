@@ -1,9 +1,6 @@
 use std::sync::OnceLock;
 
-use bevy::{
-    prelude::*,
-    render::texture::DEFAULT_IMAGE_HANDLE,
-};
+use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 
 use crate::{
     loading::TilemapAtlas,
@@ -56,6 +53,10 @@ impl ManagedLevel {
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
+                    map_colliders: vec![SolidColliderData {
+                        corner_position: Vec2::new(0.0, 0.0),
+                        size: Vec2::new(32.0, 32.0),
+                    }],
                 },
                 LevelData {
                     next_level: None,
@@ -80,6 +81,7 @@ impl ManagedLevel {
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
+                    map_colliders: vec![],
                 },
             ]
         })[(*self as u8) as usize]
@@ -98,6 +100,11 @@ struct ButtonData {
     position: Vec2,
 }
 
+struct SolidColliderData {
+    corner_position: Vec2,
+    size: Vec2,
+}
+
 struct LevelData {
     next_level: Option<ManagedLevel>,
     tileset: String,
@@ -106,6 +113,7 @@ struct LevelData {
     starting_character: Character,
     characters: Vec<CharacterData>,
     buttons: Vec<ButtonData>,
+    map_colliders: Vec<SolidColliderData>,
 }
 
 #[derive(Component)]
@@ -154,6 +162,7 @@ impl LevelManager {
         };
         ctx.create_flag();
         ctx.create_tilemap();
+        ctx.create_map_colliders();
         ctx.create_buttons();
         ctx.create_characters();
     }
@@ -254,42 +263,35 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
             );
             spawn_tilemap(&tilemap_resolver, layer_index, &self.level, self.commands);
         }
+    }
 
-        // REMOVE THIS TESTING ONLY
-        self.commands.spawn((
-            CollisionBox::AABB {
-                width_radius: 188.0,
-                height_radius: 80.0,
-            },
-            Solid,
-            SpriteBundle {
-                texture: DEFAULT_IMAGE_HANDLE.typed(),
-                transform: Transform::from_xyz(0.0, -50.0, 4.0)
-                    .with_scale(Vec3::new(188.0, 80.0, 0.0)),
-                sprite: Sprite {
-                    color: Color::RED,
+    fn create_map_colliders(&mut self) {
+        for map_collider in &self.data.map_colliders {
+            self.commands.spawn((
+                CollisionBox::AABB {
+                    width_radius: map_collider.size.x,
+                    height_radius: map_collider.size.y,
+                },
+                Solid,
+                SpriteBundle {
+                    texture: DEFAULT_IMAGE_HANDLE.typed(),
+                    transform: Transform::from_xyz(
+                        map_collider.corner_position.x,
+                        map_collider.corner_position.y,
+                        4.0,
+                    )
+                    .with_scale(Vec3::new(map_collider.size.x, map_collider.size.y, 0.0)),
+                    sprite: Sprite {
+                        color: Color::RED,
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
-            },
-        ));
-        self.commands.spawn((
-            CollisionBox::AABB {
-                width_radius: 74.0,
-                height_radius: 80.0,
-            },
-            Solid,
-            SpriteBundle {
-                texture: DEFAULT_IMAGE_HANDLE.typed(),
-                transform: Transform::from_xyz(147.0, -50.0, 4.0)
-                    .with_scale(Vec3::new(74.0, 80.0, 0.0)),
-                sprite: Sprite {
-                    color: Color::BLUE,
-                    ..default()
+                LoadedLevel {
+                    level: self.level.clone(),
                 },
-                ..default()
-            },
-        ));
+            ));
+        }
     }
 
     fn create_characters(&mut self) {
