@@ -80,7 +80,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     let title_style = TextStyle {
         font: font.clone(),
         font_size: 100.0,
-        color: Color::WHITE,
+        color: Color::BLACK,
     };
     let button_text_style = TextStyle {
         font: font.clone(),
@@ -91,13 +91,17 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     info!("Setting up game menu");
     commands
         .spawn((
-            NodeBundle {
+            ImageBundle {
                 style: Style {
                     width: bevy::ui::Val::Percent(100.0),
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
                     flex_direction: FlexDirection::Column,
                     row_gap: Val::Px(10.0),
+                    ..default()
+                },
+                image: UiImage {
+                    texture: asset_server.load("menu/title_screen.png"),
                     ..default()
                 },
                 ..default()
@@ -107,6 +111,10 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|p| {
             p.spawn(TextBundle {
                 text: Text::from_section("Puzzle Pawz", title_style.clone()),
+                style: Style {
+                    padding: UiRect::all(Val::Px(64.0)),
+                    ..default()
+                },
                 ..default()
             });
             p.spawn((
