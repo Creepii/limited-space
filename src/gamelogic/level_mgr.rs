@@ -83,6 +83,16 @@ impl ManagedLevel {
                             corner_position: Vec2::new(TILE_SIZE * 20.2, TILE_SIZE * 17.8),
                             size: Vec2::new(TILE_SIZE * 1.6, TILE_SIZE * 2.0),
                         },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 23.1, TILE_SIZE * 21.1),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 25.1, TILE_SIZE * 21.1),
+                            size: Vec2::new(TILE_SIZE * 1.8, TILE_SIZE * 0.8),
+                        },
                     ],
                     bridges: vec![],
                 },
