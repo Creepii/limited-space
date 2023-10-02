@@ -23,6 +23,7 @@ use super::{
 pub enum ManagedLevel {
     Level1,
     Level2,
+    Level3,
 }
 
 const COLLIDER_DEBUG: bool = true;
@@ -86,7 +87,7 @@ impl ManagedLevel {
                     bridges: vec![],
                 },
                 LevelData {
-                    next_level: None,
+                    next_level: Some(ManagedLevel::Level3),
                     flag_position: Vec2::new(27.0 * TILE_SIZE, 20.0 * TILE_SIZE),
                     tileset: "levels/tileset.json".to_string(),
                     tilemap_layers: vec![
@@ -212,6 +213,21 @@ impl ManagedLevel {
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
+                },
+                LevelData {
+                    bridges: vec![],
+                    buttons: vec![],
+                    next_level: None,
+                    flag_position: Vec2::new(27.0 * TILE_SIZE, 20.0 * TILE_SIZE),
+                    tileset: "levels/tileset.json".to_string(),
+                    tilemap_layers: vec![],
+                    starting_character: Character::Turtle,
+                    characters: vec![CharacterData {
+                        character: Character::Turtle,
+                        starting_position: Vec2::new(0.0, 0.0),
+                        is_discovered: true,
+                    }],
+                    map_colliders: vec![],
                 },
             ]
         })[(*self as u8) as usize]
