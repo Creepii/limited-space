@@ -126,6 +126,31 @@ impl ManagedLevel {
                             size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 4.4),
                         },
                         SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 26.1, TILE_SIZE * 21.1),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 18.1, TILE_SIZE * 17.1),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 20.1, TILE_SIZE * 20.9),
+                            size: Vec2::new(TILE_SIZE * 0.8, TILE_SIZE * 1.0),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 20.1, TILE_SIZE * 20.1),
+                            size: Vec2::new(TILE_SIZE * 1.8, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
+                            whitelisted: Some(Character::Rabbit),
+                            corner_position: Vec2::new(TILE_SIZE * 21.1, TILE_SIZE * 19.1),
+                            size: Vec2::new(TILE_SIZE * 3.1, TILE_SIZE * 0.8),
+                        },
+                        SolidColliderData {
                             whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 16.8, TILE_SIZE * 15.8),
                             size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 1.0),
