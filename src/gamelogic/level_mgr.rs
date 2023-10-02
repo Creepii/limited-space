@@ -10,7 +10,9 @@ use crate::{
 
 use super::{
     character::{Character, CurrentCharacter, DiscoveredCharacters, PlayerBundle},
-    level::{GoalFlag, GoalFlagBundle, PushButton, PushButtonBundle},
+    level::{
+        GatedBridge, GatedBridgeBundle, GoalFlag, GoalFlagBundle, PushButton, PushButtonBundle,
+    },
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -57,6 +59,12 @@ impl ManagedLevel {
                         corner_position: Vec2::new(0.0, 0.0),
                         size: Vec2::new(32.0, 32.0),
                     }],
+                    bridges: vec![BridgeData {
+                        negated: false,
+                        position: Vec2::new(256.0, 64.0),
+                        index: 0,
+                        color: Color::rgb(0.8, 0.2, 0.2),
+                    }],
                 },
                 LevelData {
                     next_level: None,
@@ -82,6 +90,7 @@ impl ManagedLevel {
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
                     map_colliders: vec![],
+                    bridges: vec![],
                 },
             ]
         })[(*self as u8) as usize]
@@ -105,6 +114,13 @@ struct SolidColliderData {
     size: Vec2,
 }
 
+struct BridgeData {
+    index: usize,
+    negated: bool,
+    color: Color,
+    position: Vec2,
+}
+
 struct LevelData {
     next_level: Option<ManagedLevel>,
     tileset: String,
@@ -114,6 +130,7 @@ struct LevelData {
     characters: Vec<CharacterData>,
     buttons: Vec<ButtonData>,
     map_colliders: Vec<SolidColliderData>,
+    bridges: Vec<BridgeData>,
 }
 
 #[derive(Component)]
@@ -164,6 +181,7 @@ impl LevelManager {
         ctx.create_tilemap();
         ctx.create_map_colliders();
         ctx.create_buttons();
+        ctx.create_bridges();
         ctx.create_characters();
     }
 
@@ -204,6 +222,59 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 level: self.level.clone(),
             },
         ));
+    }
+
+    fn create_bridges(&mut self) {
+        for bridge_data in &self.data.bridges {
+            let bridge_left = self.asset_server.load("tilemap/bridge_left.png");
+            let bridge_right = self.asset_server.load("tilemap/bridge_right.png");
+            let gate = self.asset_server.load("tilemap/bridge_left_gate.png");
+            self.commands
+                .spawn((
+                    GatedBridgeBundle {
+                        bridge: GatedBridge {
+                            negated: bridge_data.negated,
+                            opened: false,
+                            index: bridge_data.index,
+                        },
+                        collision: CollisionBox::AABB {
+                            width_radius: 16.0,
+                            height_radius: 16.0,
+                        },
+                        solid: Solid,
+                        sprite: SpriteBundle {
+                            sprite: Sprite {
+                                color: bridge_data.color,
+                                ..default()
+                            },
+                            transform: Transform::from_xyz(
+                                bridge_data.position.x,
+                                bridge_data.position.y,
+                                5.0,
+                            ),
+                            texture: gate,
+                            ..default()
+                        },
+                    },
+                    LoadedLevel {
+                        level: self.level.clone(),
+                    },
+                ))
+                .with_children(|p| {
+                    p.spawn(SpriteBundle {
+                        texture: bridge_left,
+                        transform: Transform::from_xyz(0.0, 0.0, -1.0),
+                        visibility: Visibility::Visible,
+                        ..default()
+                    });
+                    p.spawn(SpriteBundle {
+                        texture: bridge_right,
+                        transform: Transform::from_xyz(32.0, 0.0, -1.0),
+                        visibility: Visibility::Visible,
+                        ..default()
+                    });
+                });
+        }
     }
 
     fn create_buttons(&mut self) {
@@ -280,7 +351,11 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                         map_collider.corner_position.y,
                         4.0,
                     )
-                    .with_scale(Vec3::new(map_collider.size.x, map_collider.size.y, 0.0)),
+                    .with_scale(Vec3::new(
+                        map_collider.size.x,
+                        map_collider.size.y,
+                        0.0,
+                    )),
                     sprite: Sprite {
                         color: Color::RED,
                         ..default()
