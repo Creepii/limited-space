@@ -1,9 +1,6 @@
 use std::sync::OnceLock;
 
-use bevy::{
-    prelude::*,
-    render::texture::DEFAULT_IMAGE_HANDLE,
-};
+use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 
 use crate::{
     loading::TilemapAtlas,
@@ -13,7 +10,9 @@ use crate::{
 
 use super::{
     character::{Character, CurrentCharacter, DiscoveredCharacters, PlayerBundle},
-    level::{GoalFlag, GoalFlagBundle, PushButton, PushButtonBundle},
+    level::{
+        GatedBridge, GatedBridgeBundle, GoalFlag, GoalFlagBundle, PushButton, PushButtonBundle,
+    },
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -56,6 +55,16 @@ impl ManagedLevel {
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
+                    map_colliders: vec![SolidColliderData {
+                        corner_position: Vec2::new(0.0, 0.0),
+                        size: Vec2::new(32.0, 32.0),
+                    }],
+                    bridges: vec![BridgeData {
+                        negated: false,
+                        position: Vec2::new(256.0, 64.0),
+                        index: 0,
+                        color: Color::rgb(0.8, 0.2, 0.2),
+                    }],
                 },
                 LevelData {
                     next_level: None,
@@ -80,6 +89,8 @@ impl ManagedLevel {
                         index: 0,
                         color: Color::rgb(0.8, 0.2, 0.2),
                     }],
+                    map_colliders: vec![],
+                    bridges: vec![],
                 },
             ]
         })[(*self as u8) as usize]
@@ -98,6 +109,18 @@ struct ButtonData {
     position: Vec2,
 }
 
+struct SolidColliderData {
+    corner_position: Vec2,
+    size: Vec2,
+}
+
+struct BridgeData {
+    index: usize,
+    negated: bool,
+    color: Color,
+    position: Vec2,
+}
+
 struct LevelData {
     next_level: Option<ManagedLevel>,
     tileset: String,
@@ -106,6 +129,8 @@ struct LevelData {
     starting_character: Character,
     characters: Vec<CharacterData>,
     buttons: Vec<ButtonData>,
+    map_colliders: Vec<SolidColliderData>,
+    bridges: Vec<BridgeData>,
 }
 
 #[derive(Component)]
@@ -154,7 +179,9 @@ impl LevelManager {
         };
         ctx.create_flag();
         ctx.create_tilemap();
+        ctx.create_map_colliders();
         ctx.create_buttons();
+        ctx.create_bridges();
         ctx.create_characters();
     }
 
@@ -195,6 +222,59 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 level: self.level.clone(),
             },
         ));
+    }
+
+    fn create_bridges(&mut self) {
+        for bridge_data in &self.data.bridges {
+            let bridge_left = self.asset_server.load("tilemap/bridge_left.png");
+            let bridge_right = self.asset_server.load("tilemap/bridge_right.png");
+            let gate = self.asset_server.load("tilemap/bridge_left_gate.png");
+            self.commands
+                .spawn((
+                    GatedBridgeBundle {
+                        bridge: GatedBridge {
+                            negated: bridge_data.negated,
+                            opened: false,
+                            index: bridge_data.index,
+                        },
+                        collision: CollisionBox::AABB {
+                            width_radius: 16.0,
+                            height_radius: 16.0,
+                        },
+                        solid: Solid,
+                        sprite: SpriteBundle {
+                            sprite: Sprite {
+                                color: bridge_data.color,
+                                ..default()
+                            },
+                            transform: Transform::from_xyz(
+                                bridge_data.position.x,
+                                bridge_data.position.y,
+                                5.0,
+                            ),
+                            texture: gate,
+                            ..default()
+                        },
+                    },
+                    LoadedLevel {
+                        level: self.level.clone(),
+                    },
+                ))
+                .with_children(|p| {
+                    p.spawn(SpriteBundle {
+                        texture: bridge_left,
+                        transform: Transform::from_xyz(0.0, 0.0, -1.0),
+                        visibility: Visibility::Visible,
+                        ..default()
+                    });
+                    p.spawn(SpriteBundle {
+                        texture: bridge_right,
+                        transform: Transform::from_xyz(32.0, 0.0, -1.0),
+                        visibility: Visibility::Visible,
+                        ..default()
+                    });
+                });
+        }
     }
 
     fn create_buttons(&mut self) {
@@ -254,42 +334,39 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
             );
             spawn_tilemap(&tilemap_resolver, layer_index, &self.level, self.commands);
         }
+    }
 
-        // REMOVE THIS TESTING ONLY
-        self.commands.spawn((
-            CollisionBox::AABB {
-                width_radius: 188.0,
-                height_radius: 80.0,
-            },
-            Solid,
-            SpriteBundle {
-                texture: DEFAULT_IMAGE_HANDLE.typed(),
-                transform: Transform::from_xyz(0.0, -50.0, 4.0)
-                    .with_scale(Vec3::new(188.0, 80.0, 0.0)),
-                sprite: Sprite {
-                    color: Color::RED,
+    fn create_map_colliders(&mut self) {
+        for map_collider in &self.data.map_colliders {
+            self.commands.spawn((
+                CollisionBox::AABB {
+                    width_radius: map_collider.size.x,
+                    height_radius: map_collider.size.y,
+                },
+                Solid,
+                SpriteBundle {
+                    texture: DEFAULT_IMAGE_HANDLE.typed(),
+                    transform: Transform::from_xyz(
+                        map_collider.corner_position.x,
+                        map_collider.corner_position.y,
+                        4.0,
+                    )
+                    .with_scale(Vec3::new(
+                        map_collider.size.x,
+                        map_collider.size.y,
+                        0.0,
+                    )),
+                    sprite: Sprite {
+                        color: Color::RED,
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
-            },
-        ));
-        self.commands.spawn((
-            CollisionBox::AABB {
-                width_radius: 74.0,
-                height_radius: 80.0,
-            },
-            Solid,
-            SpriteBundle {
-                texture: DEFAULT_IMAGE_HANDLE.typed(),
-                transform: Transform::from_xyz(147.0, -50.0, 4.0)
-                    .with_scale(Vec3::new(74.0, 80.0, 0.0)),
-                sprite: Sprite {
-                    color: Color::BLUE,
-                    ..default()
+                LoadedLevel {
+                    level: self.level.clone(),
                 },
-                ..default()
-            },
-        ));
+            ));
+        }
     }
 
     fn create_characters(&mut self) {
