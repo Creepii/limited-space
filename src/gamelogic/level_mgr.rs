@@ -35,7 +35,7 @@ impl ManagedLevel {
             vec![
                 LevelData {
                     next_level: Some(ManagedLevel::Level2),
-                    flag_position: Vec2::new(128.0, 32.0),
+                    flag_position: Vec2::new(27.0 * 32.0, -17.5 * 32.0),
                     tileset: "levels/level1/tileset.json".to_string(),
                     tilemap_layers: vec![
                         "levels/level1/tilemap_ground.csv".to_string(),
@@ -43,23 +43,12 @@ impl ManagedLevel {
                         "levels/level1/tilemap_deco.csv".to_string(),
                     ],
                     starting_character: Character::Turtle,
-                    characters: vec![
-                        CharacterData {
-                            is_discovered: true,
-                            character: Character::Turtle,
-                            starting_position: Vec2::new(0.0, 0.0),
-                        },
-                        CharacterData {
-                            is_discovered: false,
-                            character: Character::Rabbit,
-                            starting_position: Vec2::new(64.0, 0.0),
-                        },
-                    ],
-                    buttons: vec![ButtonData {
-                        position: Vec2::new(64.0, 64.0),
-                        index: 0,
-                        color: Color::rgb(0.8, 0.2, 0.2),
+                    characters: vec![CharacterData {
+                        is_discovered: true,
+                        character: Character::Turtle,
+                        starting_position: Vec2::new(18.0 * 32.0, -18.0 * 32.0),
                     }],
+                    buttons: vec![],
                     map_colliders: vec![
                         SolidColliderData {
                             corner_position: Vec2::new(TILE_SIZE * 16.0, TILE_SIZE * 16.0),
@@ -179,6 +168,7 @@ struct LevelLoadContext<'ctx, 'world, 'cmd> {
     atlasses: &'ctx mut ResMut<'world, Assets<TextureAtlas>>,
     tiles_atlas: &'ctx Res<'world, Assets<Tiles>>,
     tile_set_atlas: &'ctx Res<'world, Assets<TileSet>>,
+    camera: &'ctx mut Transform,
     commands: &'ctx mut Commands<'world, 'cmd>,
 }
 
@@ -190,6 +180,7 @@ impl LevelManager {
         mut atlasses: ResMut<'world, Assets<TextureAtlas>>,
         tiles: Res<'world, Assets<Tiles>>,
         tilesets: Res<'world, Assets<TileSet>>,
+        camera: &mut Transform,
         mut commands: Commands<'world, 'cmd>,
     ) {
         info!("Loading level: {:?}", self.next);
@@ -202,6 +193,7 @@ impl LevelManager {
             atlasses: &mut atlasses,
             tiles_atlas: &tiles,
             tile_set_atlas: &tilesets,
+            camera,
             commands: &mut commands,
         };
         ctx.create_flag();
@@ -401,6 +393,10 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
         for character in &self.data.characters {
             if character.is_discovered {
                 discovered.push(character.character.clone());
+            }
+            if character.character == self.data.starting_character {
+                self.camera.translation.x = character.starting_position.x;
+                self.camera.translation.y = character.starting_position.y;
             }
             self.commands.spawn((
                 SpriteSheetBundle {

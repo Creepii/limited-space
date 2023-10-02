@@ -85,8 +85,10 @@ fn level_loading(
     tiles: Res<Assets<Tiles>>,
     tilesets: Res<Assets<TileSet>>,
     mut commands: Commands,
+    mut camera: Query<&mut Transform, With<MainCamera>>,
     mut query: Query<&mut LevelManager, Changed<LevelManager>>,
 ) {
+    let mut camera = camera.single_mut();
     if let Ok(mut manager) = query.get_single_mut() {
         manager.unload_level(&mut commands, level_entities.iter());
         manager.load_level(
@@ -95,6 +97,7 @@ fn level_loading(
             atlasses,
             tiles,
             tilesets,
+            &mut camera,
             commands,
         );
         manager.current = manager.next;
