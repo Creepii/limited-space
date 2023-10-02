@@ -119,6 +119,14 @@ impl Character {
             Character::Crocodile => 1,
         }
     }
+
+    fn speed(&self) -> f32 {
+        match self {
+            Character::Turtle => 64.0,
+            Character::Rabbit => 64.0,
+            Character::Crocodile => 64.0,
+        }
+    }
 }
 
 #[derive(Component)]
@@ -327,17 +335,15 @@ fn trigger_meet_character(
     }
 }
 
-const PLAYER_SPEED: f32 = 128.0;
-
 fn player_movement(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
     player_query: Query<&CurrentCharacter>,
     solid_collider_query: Query<(&CollisionBox, &Transform), With<Solid>>,
-    mut query: Query<(&Character, &CollisionBox, &mut Transform), Without<Solid>>,
+    mut query: Query<(&Character, &CollisionBox, &mut Walking, &mut Transform), Without<Solid>>,
 ) {
     if let Ok(current) = player_query.get_single() {
-        for (character, collision_box, mut transform) in &mut query {
+        for (character, collision_box, mut walking, mut transform) in &mut query {
             if current.current == *character {
                 let direction = Vec2::new(
                     if keys.pressed(KeyCode::A) {
@@ -355,8 +361,13 @@ fn player_movement(
                         0.0
                     },
                 );
+                if direction.length_squared() == 0.0 {
+                    walking.walking = false;
+                    continue;
+                }
+                walking.walking = true;
                 let movement =
-                    direction.normalize_or_zero() * (PLAYER_SPEED * time.delta_seconds());
+                    direction.normalize_or_zero() * (character.speed() * time.delta_seconds());
                 // high speed leads to glitching because movement code isn't in fixed update
                 transform.translation.x += movement.x;
                 transform.translation.y += movement.y;
@@ -387,17 +398,6 @@ fn player_movement(
                         Quat::from_euler(EulerRot::XYZ, 0.0, 0.0, view_rotation),
                         0.2,
                     );
-                    let movement =
-                        direction.normalize_or_zero() * (PLAYER_SPEED * time.delta_seconds());
-                    transform.translation.x += movement.x;
-                    transform.translation.y += movement.y;
-                    let view_rotation = Vec2::Y.angle_between(movement);
-                    if !view_rotation.is_nan() {
-                        transform.rotation = transform.rotation.lerp(
-                            Quat::from_euler(EulerRot::XYZ, 0.0, 0.0, view_rotation),
-                            0.2,
-                        );
-                    }
                 }
             }
         }
