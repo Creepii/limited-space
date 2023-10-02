@@ -106,7 +106,7 @@ fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
         ))
         .with_children(|p| {
             p.spawn(TextBundle {
-                text: Text::from_section("Limited Space", title_style.clone()),
+                text: Text::from_section("Puzzle Pawz", title_style.clone()),
                 ..default()
             });
             p.spawn((

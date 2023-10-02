@@ -41,7 +41,7 @@ fn main() {
                     primary_window: Some(Window {
                         resizable: false,
                         resolution: WindowResolution::new(1024.0, 640.0),
-                        title: String::from("Limited Space"),
+                        title: String::from("Puzzle Pawz"),
                         ..default()
                     }),
                     ..default()
