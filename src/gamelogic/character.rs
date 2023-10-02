@@ -120,10 +120,10 @@ impl Character {
         }
     }
 
-    fn speed(&self) -> f32 {
+    fn speed(&self, time: &Res<Time>) -> f32 {
         match self {
             Character::Turtle => 64.0,
-            Character::Rabbit => 64.0,
+            Character::Rabbit => 16.0 + 64.0 * (time.elapsed_seconds() * 6.0).sin().abs(),
             Character::Crocodile => 64.0,
         }
     }
@@ -371,7 +371,7 @@ fn player_movement(
                 }
                 walking.walking = true;
                 let movement =
-                    direction.normalize_or_zero() * (character.speed() * time.delta_seconds());
+                    direction.normalize_or_zero() * (character.speed(&time) * time.delta_seconds());
                 // high speed leads to glitching because movement code isn't in fixed update
                 transform.translation.x += movement.x;
                 transform.translation.y += movement.y;
