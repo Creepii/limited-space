@@ -1,17 +1,28 @@
-use bevy::prelude::*;
+use bevy::{
+    audio::{PlaybackMode, Volume},
+    prelude::*,
+};
 
 use crate::{util::Lerp, GameState, MainCamera};
 
 use super::character::{Character, CurrentCharacter, DiscoveredCharacters};
 
-enum CameraMode {
+pub enum CameraMode {
     AllCharacters,
     CurrentCharacter,
 }
+impl CameraMode {
+    pub(crate) fn texture(&self, asset_server: &Res<AssetServer>) -> Handle<Image> {
+        match self {
+            CameraMode::AllCharacters => asset_server.load("menu/all_focus.png"),
+            CameraMode::CurrentCharacter => asset_server.load("menu/single_focus.png"),
+        }
+    }
+}
 
 #[derive(Resource)]
-struct CurrentCameraMode {
-    current: CameraMode,
+pub struct CurrentCameraMode {
+    pub current: CameraMode,
 }
 
 pub struct CameraControlPlugin;
@@ -38,9 +49,32 @@ impl CurrentCameraMode {
     }
 }
 
-fn switch_camera_mode(keys: Res<Input<KeyCode>>, mut camera_mode: ResMut<CurrentCameraMode>) {
+fn switch_camera_mode(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    keys: Res<Input<KeyCode>>,
+    discovered: Query<&DiscoveredCharacters>,
+    mut camera_mode: ResMut<CurrentCameraMode>,
+) {
+    let can_switch = if let Ok(DiscoveredCharacters { discovered }) = discovered.get_single() {
+        match camera_mode.current {
+            CameraMode::CurrentCharacter => discovered.len() > 1,
+            CameraMode::AllCharacters => true,
+        }
+    } else {
+        false
+    };
     // switch camera mode
-    if keys.just_pressed(KeyCode::F) {
+    if keys.just_pressed(KeyCode::F) && can_switch {
+        commands.spawn(AudioBundle {
+            source: asset_server.load("sounds/switch_camera.ogg"),
+            settings: PlaybackSettings {
+                mode: PlaybackMode::Despawn,
+                volume: Volume::new_absolute(1.0),
+                speed: 1.0,
+                paused: false,
+            },
+        });
         camera_mode.toggle();
     }
 }

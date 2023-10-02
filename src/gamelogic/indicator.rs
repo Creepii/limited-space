@@ -2,7 +2,10 @@ use bevy::prelude::*;
 
 use crate::GameState;
 
-use super::character::{Character, CurrentCharacter, DiscoveredCharacters};
+use super::{
+    camera::{CameraMode, CurrentCameraMode},
+    character::{Character, CurrentCharacter, DiscoveredCharacters},
+};
 
 #[derive(Component)]
 struct CharacterIndicator {
@@ -12,6 +15,9 @@ struct CharacterIndicator {
 #[derive(Component)]
 struct CharacterIndicatorParent;
 
+#[derive(Component)]
+struct CameraIndicator;
+
 pub struct IndicatorPlugin;
 
 impl Plugin for IndicatorPlugin {
@@ -19,16 +25,30 @@ impl Plugin for IndicatorPlugin {
         app.add_systems(OnEnter(GameState::InGame), create_overlay);
         app.add_systems(
             Update,
-            update_indicators.run_if(in_state(GameState::InGame)),
+            update_character_indicators.run_if(in_state(GameState::InGame)),
         );
         app.add_systems(
             Update,
-            update_character_indicators.run_if(in_state(GameState::InGame)),
+            update_selected_indicators.run_if(in_state(GameState::InGame)),
+        );
+        app.add_systems(
+            Update,
+            update_camera_indicator.run_if(in_state(GameState::InGame)),
         );
     }
 }
 
-fn update_indicators(
+fn update_camera_indicator(
+    asset_server: Res<AssetServer>,
+    mut query: Query<&mut UiImage, With<CameraIndicator>>,
+    camera_mode: Res<CurrentCameraMode>,
+) {
+    for mut image in &mut query {
+        image.texture = camera_mode.current.texture(&asset_server);
+    }
+}
+
+fn update_character_indicators(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     discovered: Query<&DiscoveredCharacters, Changed<DiscoveredCharacters>>,
@@ -141,21 +161,39 @@ fn make_character_component(
         });
 }
 
-fn create_overlay(mut commands: Commands) {
-    commands.spawn((
-        NodeBundle {
+fn create_overlay(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn(NodeBundle {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(12.0),
                 ..default()
             },
             ..default()
-        },
-        CharacterIndicatorParent,
-    ));
+        })
+        .with_children(|p| {
+            p.spawn((NodeBundle { ..default() }, CharacterIndicatorParent));
+            p.spawn(NodeBundle {
+                style: Style {
+                    flex_grow: 1.0,
+                    ..default()
+                },
+                ..default()
+            });
+            p.spawn((
+                ImageBundle {
+                    image: UiImage {
+                        texture: CameraMode::CurrentCharacter.texture(&asset_server),
+                        ..default()
+                    },
+                    ..default()
+                },
+                CameraIndicator,
+            ));
+        });
 }
 
-fn update_character_indicators(
+fn update_selected_indicators(
     character: Query<&CurrentCharacter>,
     mut query: Query<(&mut Visibility, &CharacterIndicator)>,
 ) {
