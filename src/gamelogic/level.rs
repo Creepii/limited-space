@@ -95,7 +95,7 @@ fn update_bridge(
                 }
                 false => {
                     *visible = Visibility::Visible;
-                    commands.entity(entity).insert(Solid);
+                    commands.entity(entity).insert(Solid { whitelisted: None });
                 }
             }
             info!(

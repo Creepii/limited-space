@@ -343,7 +343,7 @@ fn player_movement(
     time: Res<Time>,
     keys: Res<Input<KeyCode>>,
     player_query: Query<&CurrentCharacter>,
-    solid_collider_query: Query<(&CollisionBox, &Transform), With<Solid>>,
+    solid_collider_query: Query<(&CollisionBox, &Transform, &Solid)>,
     mut query: Query<(&Character, &CollisionBox, &mut Walking, &mut Transform), Without<Solid>>,
 ) {
     if let Ok(current) = player_query.get_single() {
@@ -380,7 +380,8 @@ fn player_movement(
                 let mut total_penetration = Vec2::ZERO;
                 solid_collider_query
                     .iter()
-                    .for_each(|(solid_collision_box, solid_transform)| {
+                    .filter(|(_, _, solid)| solid.whitelisted != Some(character.clone()))
+                    .for_each(|(solid_collision_box, solid_transform, _)| {
                         let solid_collider = solid_collision_box.to_collider(
                             solid_transform.translation.x,
                             solid_transform.translation.y,
