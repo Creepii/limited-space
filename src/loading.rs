@@ -42,6 +42,12 @@ fn start_loading(asset_server: Res<AssetServer>, mut loading_resources: ResMut<L
         .push(asset_server.load_untyped("levels/level1/tilemap_ground.csv"));
     loading_resources
         .handles
+        .push(asset_server.load_untyped("levels/level1/tilemap_deco.csv"));
+    loading_resources
+        .handles
+        .push(asset_server.load_untyped("levels/level1/tilemap_walls.csv"));
+    loading_resources
+        .handles
         .push(asset_server.load_untyped("levels/level1/tileset.json"));
 }
 

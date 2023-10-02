@@ -105,7 +105,7 @@ impl<'tileset> Tilemap<'tileset> {
 }
 
 pub struct TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
-    tilemap: &'tilemap Tilemap<'tileset>,
+    pub tilemap: &'tilemap Tilemap<'tileset>,
     asset_server: &'tilemap Res<'res, AssetServer>,
     tilemap_atlas: &'tilemap Res<'res, TilemapAtlas>,
     atlasses: &'tilemap Res<'res, Assets<TextureAtlas>>,
@@ -130,8 +130,8 @@ impl<'res, 'tilemap, 'tileset> TilemapAtlasResolver<'res, 'tilemap, 'tileset> {
         self.tilemap_atlas.tilemap.as_ref().unwrap().clone()
     }
 
-    pub fn get(&self, x: usize, y: usize) -> Option<usize> {
-        let texture_name = self.tilemap.get_texture_name_of_tile(x, y)?;
+    pub fn get(&self, tilemap: &Tilemap, x: usize, y: usize) -> Option<usize> {
+        let texture_name = tilemap.get_texture_name_of_tile(x, y)?;
         let atlas: &TextureAtlas = self.atlasses.get(&self.atlas()).unwrap();
         let handle: Handle<Image> = self.asset_server.get_handle(texture_name);
         atlas.get_texture_index(&handle)

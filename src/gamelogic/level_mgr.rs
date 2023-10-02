@@ -1,11 +1,11 @@
 use std::sync::OnceLock;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::render_resource::encase::rts_array::Length};
 
 use crate::{
     loading::TilemapAtlas,
     physics::CollisionBox,
-    tilemap::{TileSet, Tilemap, TilemapAtlasResolver, Tiles},
+    tilemap::{TileSet, Tilemap, TilemapAtlasResolver, Tiles, self},
 };
 
 use super::{
@@ -30,7 +30,11 @@ impl ManagedLevel {
                     next_level: Some(ManagedLevel::Level2),
                     flag_position: Vec2::new(128.0, 32.0),
                     tileset: "levels/level1/tileset.json".to_string(),
-                    tilemap_layers: vec!["levels/level1/tilemap_ground.csv".to_string()],
+                    tilemap_layers: vec![
+                        "levels/level1/tilemap_ground.csv".to_string(),
+                        "levels/level1/tilemap_walls.csv".to_string(),
+                        "levels/level1/tilemap_deco.csv".to_string()
+                    ],
                     starting_character: Character::Turtle,
                     characters: vec![
                         CharacterData {
@@ -231,40 +235,23 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
     }
 
     fn create_tilemap(&mut self) {
-        let tiles_asset: Handle<Tiles> = self.asset_server.load(&self.data.tilemap_layers[0]);
         let tile_set_asset: Handle<TileSet> = self.asset_server.load(&self.data.tileset);
-        let tilemap = Tilemap::new(
-            self.tile_set_atlas.get(&tile_set_asset).unwrap(),
-            self.tiles_atlas.get(&tiles_asset).unwrap(),
-        )
-        .unwrap();
-        let tilemap_resolver = TilemapAtlasResolver::new(
-            &tilemap,
-            self.asset_server,
-            self.tilemap_atlas,
-            self.atlasses,
-        );
-        for x in 0..tilemap.width() {
-            for y in 0..tilemap.height() {
-                if let Some(tile) = tilemap_resolver.get(x, y) {
-                    self.commands.spawn((
-                        SpriteSheetBundle {
-                            texture_atlas: tilemap_resolver.atlas(),
-                            sprite: TextureAtlasSprite::new(tile),
-                            transform: Transform::from_translation(Vec3 {
-                                x: (x as f32) * 32.0,
-                                y: (y as f32) * 32.0,
-                                z: 0.0,
-                            })
-                            .with_scale(Vec3::new(1.02, 1.02, 1.0)),
-                            ..default()
-                        },
-                        LoadedLevel {
-                            level: self.level.clone(),
-                        },
-                    ));
-                }
-            }
+        for (layer_index, tilemap_layer) in self.data.tilemap_layers.iter().enumerate() {
+            let tiles_asset: Handle<Tiles> = self
+                .asset_server
+                .load(tilemap_layer);
+            let tilemap = Tilemap::new(
+                self.tile_set_atlas.get(&tile_set_asset).unwrap(),
+                self.tiles_atlas.get(&tiles_asset).unwrap(),
+            )
+            .unwrap();
+            let tilemap_resolver = TilemapAtlasResolver::new(
+                &tilemap,
+                self.asset_server,
+                self.tilemap_atlas,
+                self.atlasses,
+            );
+            spawn_tilemap(&tilemap_resolver, layer_index, &self.level, self.commands);
         }
     }
 
@@ -304,5 +291,35 @@ impl<'ctx, 'world, 'cmd> LevelLoadContext<'ctx, 'world, 'cmd> {
                 level: self.level.clone(),
             },
         ));
+    }
+}
+
+fn spawn_tilemap(
+    tilemap_resolver: &TilemapAtlasResolver,
+    layer: usize,
+    level: &ManagedLevel,
+    commands: &mut Commands,
+) {
+    for x in 0..tilemap_resolver.tilemap.width() {
+        for y in 0..tilemap_resolver.tilemap.height() {
+            if let Some(tile) = tilemap_resolver.get(tilemap_resolver.tilemap, x, y) {
+                commands.spawn((
+                    SpriteSheetBundle {
+                        texture_atlas: tilemap_resolver.atlas(),
+                        sprite: TextureAtlasSprite::new(tile),
+                        transform: Transform::from_translation(Vec3 {
+                            x: (x as f32) * 32.0,
+                            y: -(y as f32) * 32.0,
+                            z: layer as f32,
+                        })
+                        .with_scale(Vec3::new(1.02, 1.02, 1.0)),
+                        ..default()
+                    },
+                    LoadedLevel {
+                        level: level.clone(),
+                    },
+                ));
+            }
+        }
     }
 }
