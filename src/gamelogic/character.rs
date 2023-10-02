@@ -118,7 +118,7 @@ impl Character {
             Character::Turtle => CollisionBox::Circle { radius: 18.0 },
             Character::Rabbit => CollisionBox::Circle { radius: 18.0 },
             Character::Crocodile => CollisionBox::Circle { radius: 18.0 },
-            Character::Lizard => CollisionBox::Circle { radius: 8.0 },
+            Character::Lizard => CollisionBox::Circle { radius: 10.0 },
         }
     }
 

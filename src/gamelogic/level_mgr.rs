@@ -26,7 +26,7 @@ pub enum ManagedLevel {
     Level3,
 }
 
-const COLLIDER_DEBUG: bool = true;
+const COLLIDER_DEBUG: bool = false;
 
 static LEVEL_DATAS: OnceLock<Vec<LevelData>> = OnceLock::new();
 
@@ -286,13 +286,13 @@ impl ManagedLevel {
                     map_colliders: vec![
                         SolidColliderData {
                             whitelisted: None,
-                            corner_position: Vec2::new(TILE_SIZE * 15.2, TILE_SIZE * 14.0),
-                            size: Vec2::new(TILE_SIZE * 1.8, TILE_SIZE * 5.0),
+                            corner_position: Vec2::new(TILE_SIZE * 15.3, TILE_SIZE * 14.0),
+                            size: Vec2::new(TILE_SIZE * 1.7, TILE_SIZE * 5.0),
                         },
                         SolidColliderData {
                             whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 13.0, TILE_SIZE * 14.0),
-                            size: Vec2::new(TILE_SIZE * 1.8, TILE_SIZE * 5.0),
+                            size: Vec2::new(TILE_SIZE * 1.7, TILE_SIZE * 5.0),
                         },
                         SolidColliderData {
                             whitelisted: None,
@@ -306,28 +306,28 @@ impl ManagedLevel {
                         },
                         SolidColliderData {
                             whitelisted: None,
-                            corner_position: Vec2::new(TILE_SIZE * 17.0, TILE_SIZE * 10.0),
-                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 13.0),
+                            corner_position: Vec2::new(TILE_SIZE * 17.0, TILE_SIZE * 10.1),
+                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 12.8),
                         },
                         SolidColliderData {
                             whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 17.0, TILE_SIZE * 8.0),
-                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 1.0),
+                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 0.9),
                         },
                         SolidColliderData {
                             whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 23.0, TILE_SIZE * 15.0),
-                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 1.0),
+                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 0.9),
                         },
                         SolidColliderData {
                             whitelisted: None,
-                            corner_position: Vec2::new(TILE_SIZE * 23.0, TILE_SIZE * 17.0),
-                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 1.0),
+                            corner_position: Vec2::new(TILE_SIZE * 23.0, TILE_SIZE * 17.1),
+                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 0.9),
                         },
                         SolidColliderData {
                             whitelisted: None,
-                            corner_position: Vec2::new(TILE_SIZE * 17.0, TILE_SIZE * 24.0),
-                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 1.0),
+                            corner_position: Vec2::new(TILE_SIZE * 17.0, TILE_SIZE * 24.1),
+                            size: Vec2::new(TILE_SIZE * 2.0, TILE_SIZE * 0.9),
                         },
                         SolidColliderData {
                             whitelisted: None,
@@ -352,12 +352,12 @@ impl ManagedLevel {
                         SolidColliderData {
                             whitelisted: None,
                             corner_position: Vec2::new(TILE_SIZE * 19.0, TILE_SIZE * 17.0),
-                            size: Vec2::new(TILE_SIZE * 1.8, TILE_SIZE * 3.0),
+                            size: Vec2::new(TILE_SIZE * 1.7, TILE_SIZE * 3.0),
                         },
                         SolidColliderData {
                             whitelisted: None,
-                            corner_position: Vec2::new(TILE_SIZE * 21.2, TILE_SIZE * 17.0),
-                            size: Vec2::new(TILE_SIZE * 1.8, TILE_SIZE * 3.0),
+                            corner_position: Vec2::new(TILE_SIZE * 21.3, TILE_SIZE * 17.0),
+                            size: Vec2::new(TILE_SIZE * 1.7, TILE_SIZE * 3.0),
                         },
                         SolidColliderData {
                             whitelisted: None,
